@@ -173,18 +173,18 @@ double std_objective_function(magiccube magic_cube) {
     return std;
 }
 
-magiccube steepest_neighbor_value(magiccube magic_cube, double (*objective_function)(magiccube)) {
+magiccube steepest_neighbor_value(magiccube magic_cube, double (*value_function)(magiccube)) {
     int cube_index_1, cube_index_2, steepest_value, temp_value;
     magiccube new_cube;
     cube_index_1 = 0;
     cube_index_2 = 1;
     cube_swap(magic_cube, cube_index_1, cube_index_2);
-    steepest_value = objective_function(magic_cube);
+    steepest_value = value_function(magic_cube);
     cube_swap(magic_cube, cube_index_1, cube_index_2);
     for (int i = 0; i < 124; i++) {
         for (int j = i+1; j < 125; j++) {
             cube_swap(magic_cube, i, j);
-            temp_value = objective_function(magic_cube);
+            temp_value = value_function(magic_cube);
             if (temp_value > steepest_value) {
                 steepest_value = temp_value;
                 cube_index_1 = i;
@@ -199,18 +199,18 @@ magiccube steepest_neighbor_value(magiccube magic_cube, double (*objective_funct
     return new_cube;
 }
 
-magiccube steepest_neighbor_cost(magiccube magic_cube, double (*objective_function)(magiccube)) {
+magiccube steepest_neighbor_cost(magiccube magic_cube, double (*cost_function)(magiccube)) {
     int cube_index_1, cube_index_2, steepest_value, temp_value;
     magiccube new_cube;
     cube_index_1 = 0;
     cube_index_2 = 1;
     cube_swap(magic_cube, cube_index_1, cube_index_2);
-    steepest_value = objective_function(magic_cube);
+    steepest_value = cost_function(magic_cube);
     cube_swap(magic_cube, cube_index_1, cube_index_2);
     for (int i = 0; i < 124; i++) {
         for (int j = i+1; j < 125; j++) {
             cube_swap(magic_cube, i, j);
-            temp_value = objective_function(magic_cube);
+            temp_value = cost_function(magic_cube);
             if (temp_value < steepest_value) {
                 steepest_value = temp_value;
                 cube_index_1 = i;
