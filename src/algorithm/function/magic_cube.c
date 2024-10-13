@@ -109,10 +109,10 @@ double line_objective_function(magiccube magic_cube) {
     return (double) point;
 }
 
-double std_objective_function(magiccube magic_cube) {
+double var_objective_function(magiccube magic_cube) {
     int line_sum_1, line_sum_2, line_sum_3, line_sum_4, line_sum_5, line_sum_6, mirr;
-    double std;
-    std = 0;
+    double var;
+    var = 0;
     // rows, columns, slices
     for (int k = 0; k < 5; k++) {
         for (int j = 0; j < 5; j++) {
@@ -124,9 +124,9 @@ double std_objective_function(magiccube magic_cube) {
                 line_sum_2 += magic_cube[25*k + 5*i + j];
                 line_sum_3 += magic_cube[25*j + 5*i + k];
             }
-            std += powl(line_sum_1 - magic_const, 2);
-            std += powl(line_sum_2 - magic_const, 2);
-            std += powl(line_sum_3 - magic_const, 2);
+            var += powl(line_sum_1 - magic_const, 2);
+            var += powl(line_sum_2 - magic_const, 2);
+            var += powl(line_sum_3 - magic_const, 2);
         }
     }
     // face diagonals
@@ -146,12 +146,12 @@ double std_objective_function(magiccube magic_cube) {
             line_sum_5 += magic_cube[25*i + 5*i + j];
             line_sum_6 += magic_cube[25*mirr + 5*mirr + j];
         }
-        std += powl(line_sum_1 - magic_const, 2);
-        std += powl(line_sum_2 - magic_const, 2);
-        std += powl(line_sum_3 - magic_const, 2);
-        std += powl(line_sum_4 - magic_const, 2);
-        std += powl(line_sum_5 - magic_const, 2);
-        std += powl(line_sum_6 - magic_const, 2);
+        var += powl(line_sum_1 - magic_const, 2);
+        var += powl(line_sum_2 - magic_const, 2);
+        var += powl(line_sum_3 - magic_const, 2);
+        var += powl(line_sum_4 - magic_const, 2);
+        var += powl(line_sum_5 - magic_const, 2);
+        var += powl(line_sum_6 - magic_const, 2);
     }
     // space diagonals
     line_sum_1 = 0;
@@ -165,12 +165,12 @@ double std_objective_function(magiccube magic_cube) {
         line_sum_3 += magic_cube[25*mirr + 5*i + i];
         line_sum_4 += magic_cube[25*mirr + 5*i + mirr];
     }
-    std += powl(line_sum_1 - magic_const, 2);
-    std += powl(line_sum_2 - magic_const, 2);
-    std += powl(line_sum_3 - magic_const, 2);
-    std += powl(line_sum_4 - magic_const, 2);
-    std = sqrtl(std/125);
-    return std;
+    var += powl(line_sum_1 - magic_const, 2);
+    var += powl(line_sum_2 - magic_const, 2);
+    var += powl(line_sum_3 - magic_const, 2);
+    var += powl(line_sum_4 - magic_const, 2);
+    var = var/125;
+    return var;
 }
 
 magiccube steepest_neighbor_value(magiccube magic_cube, double (*value_function)(magiccube)) {

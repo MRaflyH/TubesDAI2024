@@ -14,7 +14,7 @@ void free_cube(magiccube magic_cube);
 magiccube deep_copy_magic_cube(magiccube magic_cube);
 magiccube random_magic_cube();
 double line_objective_function(magiccube magic_cube);
-double std_objective_function(magiccube magic_cube);
+double var_objective_function(magiccube magic_cube);
 magiccube steepest_neighbor_value(magiccube magic_cube, double (*objective_function)(magiccube));
 magiccube steepest_neighbor_cost(magiccube magic_cube, double (*objective_function)(magiccube));
 magiccube random_neighbor(magiccube magic_cube);
