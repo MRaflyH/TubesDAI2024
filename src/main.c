@@ -4,14 +4,13 @@
 
 int main() {
     clock_t t; 
-    t = clock(); 
 
     // 0 -> line value
-    // 1 -> standard deviation cost
+    // 1 -> variance cost
     int obj_option = 1;
 
-    // 0 -> division formula
-    // 0 -> arithmatic formula
+    // 0 -> geometric formula
+    // 1 -> arithmatic formula
     int temp_option = 0;
 
     double (*objective)(magiccube);
@@ -50,8 +49,8 @@ int main() {
 
     // magiccube mySolution;
     // mySolution = create_magic_cube(solution);
-    magiccube myCube;
-    myCube = random_magic_cube();
+    // magiccube myCube;
+    // myCube = random_magic_cube();
     // display_cube(myCube);
 
     // magiccube neighborCube;
@@ -63,22 +62,34 @@ int main() {
     // display_cube(restartCube);
 
     magiccube annealingCube;
-    annealingCube = simulated_annealing_cost(myCube, objective, geometric_temperature_function, 1000000000);
-    printf("%f\n%f\n", var_objective_function(annealingCube), line_objective_function(annealingCube));
-    display_cube(annealingCube);
+    // annealingCube = simulated_annealing_cost(myCube, objective, geometric_temperature_function, 1000000000);
+    // printf("%f\n%f\n", var_objective_function(annealingCube), line_objective_function(annealingCube));
+    // display_cube(annealingCube);
 
 
-    // double cost = 0;
-    // for (int i = 0; i < 100; i++) {
-    //     annealingCube = annealing(random_magic_cube(), objective, geometric_temperature_function, 1000000000);
-    //     cost += objective(annealingCube);
-    //     printf("%d\n", i);
-    // }
-    // printf("%f\n", cost/100);
+    t = clock(); 
+    double cost = 0;
+    double line = 0;
+    double time = 0;
+    
+    for (int i = 0; i < 100; i++) {
+        t = clock(); 
+        annealingCube = annealing(random_magic_cube(), var_objective_function, geometric_temperature_function, 1000000000);
+        t = clock() - t; 
+        time += ((double)t)/CLOCKS_PER_SEC; 
+        cost += var_objective_function(annealingCube);
+        line += line_objective_function(annealingCube);
+        printf("\r%d", i);
+        fflush(stdout);
+    }
+    printf("\n");
+    printf("avg cost = %f\n", cost/100);
+    printf("avg line = %f\n", line/100);
+    printf("avg time = %f\n", time/100);
 
-    t = clock() - t; 
-    double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds 
-    printf("%f seconds\n", time_taken); 
+    // t = clock() - t; 
+    // double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds 
+    // printf("%f seconds\n", time_taken); 
 
     return 0;
 }
