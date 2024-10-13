@@ -1,25 +1,25 @@
 #include "random_restart_hill_climbing.h"
 
-magiccube random_restart_hill_climbing_value(double (*objective_function)(magiccube), int max_iteration) {
+magiccube random_restart_hill_climbing_value(double (*value_function)(magiccube), int max_iteration) {
     magiccube current_cube, next_cube, best_cube;
     double current_value, best_value;
     best_cube = random_magic_cube();
-    best_value = objective_function(best_cube);
+    best_value = value_function(best_cube);
     int i = 0;
     while (i < max_iteration && best_value < 109) {
         printf("\r%d / %d", i, max_iteration);
         fflush(stdout);
         current_cube = random_magic_cube();
         while (1) {
-            next_cube = steepest_neighbor_value(current_cube, objective_function);
-            if (objective_function(next_cube) <= objective_function(current_cube)) {
+            next_cube = steepest_neighbor_value(current_cube, value_function);
+            if (value_function(next_cube) <= value_function(current_cube)) {
                 free_cube(next_cube);
                 break;
             }
             free_cube(current_cube);
             current_cube = next_cube;
         }
-        current_value = objective_function(current_cube);
+        current_value = value_function(current_cube);
         if (current_value > best_value) {
             free_cube(best_cube);
             best_cube = current_cube;
@@ -34,24 +34,24 @@ magiccube random_restart_hill_climbing_value(double (*objective_function)(magicc
     return best_cube;
 }
 
-magiccube random_restart_hill_climbing_cost(double (*objective_function)(magiccube), int max_iteration) {
+magiccube random_restart_hill_climbing_cost(double (*cost_function)(magiccube), int max_iteration) {
     magiccube current_cube, next_cube, best_cube;
     double current_cost, best_cost;
     best_cube = random_magic_cube();
-    best_cost = objective_function(best_cube);
+    best_cost = cost_function(best_cube);
     int i = 0;
     while (i < max_iteration && best_cost > 0) {
         current_cube = random_magic_cube();
         while (1) {
-            next_cube = steepest_neighbor_cost(current_cube, objective_function);
-            if (objective_function(next_cube) >= objective_function(current_cube)) {
+            next_cube = steepest_neighbor_cost(current_cube, cost_function);
+            if (cost_function(next_cube) >= cost_function(current_cube)) {
                 free_cube(next_cube);
                 break;
             }
             free_cube(current_cube);
             current_cube = next_cube;
         }
-        current_cost = objective_function(current_cube);
+        current_cost = cost_function(current_cube);
         if (current_cost < best_cost) {
             free_cube(best_cube);
             best_cube = current_cube;
