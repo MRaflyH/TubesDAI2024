@@ -46,6 +46,6 @@ def simulatedAnnealingAlgorithm(magicCube, T, objFunction, isObjectiveFindingMax
 
 if __name__ == "__main__":
   test = buildRandomMagicCube()
-  print()
-  print(lineFunction(simulatedAnnealingAlgorithm(test, 1000000000000000, varFunction, False)))
+  print(lineFunction(test))
+  print(lineFunction(simulatedAnnealingAlgorithm(test, 1000000000000000, lineFunction, True)))
   exit
