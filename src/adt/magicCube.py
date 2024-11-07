@@ -9,6 +9,7 @@ isPerfectValueDict = {
 }
 
 # Magic cube builder, printer, selector
+
 def buildRandomMagicCube():
     magicCube = [x for x in range (1,126)]
     random.shuffle(magicCube)
@@ -31,6 +32,7 @@ def selectorMagicCube(magicCube, x, y, z):
     return magicCube[x + (y*5) + (z*25)]
 
 # Objective functions
+
 def lineObjectiveFunction(magicCube):
     point = 0
 
@@ -108,6 +110,8 @@ def varObjectiveFunction(magicCube):
 
     return var / 125
 
+# Neighbors
+
 def steepestNeighborMagicCube(magicCube, objectiveFunction, isValue):
     swapIndex1 = 0
     swapIndex2 = 1
@@ -133,14 +137,14 @@ def steepestNeighborMagicCube(magicCube, objectiveFunction, isValue):
 
     return neighborMagicCube
 
-def swapMagicCube(magicCube, i, j):
-    magicCube[i], magicCube[j] = magicCube[j], magicCube[i]
-
 def random_neighbor(magicCube):
     neighborMagicCube = copy.deepcopy(magicCube)
     i, j = random.sample(range(125), 2)
     swapMagicCube(neighborMagicCube, i, j)
     return neighborMagicCube
+
+def swapMagicCube(magicCube, i, j):
+    magicCube[i], magicCube[j] = magicCube[j], magicCube[i]
 
 if __name__ == "__main__":
     test = buildRandomMagicCube()
