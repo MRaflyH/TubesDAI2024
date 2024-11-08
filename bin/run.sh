@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./main
+python3 ../src/main.py

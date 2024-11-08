@@ -1,17 +1,11 @@
-CC = gcc
-CFLAGS = -Wall -g
-BIN_DIR = ../bin
+# Remove C compilation config
+PYTHON = python3
 SRC_DIR = ../src
-ALG_DIR = $(SRC_DIR)/algorithm
-FUN_DIR = $(ALG_DIR)/function
 
-all: $(BIN_DIR)/main
-	$(BIN_DIR)/main
-
-$(BIN_DIR)/main: $(FUN_DIR)/magic_cube.c $(FUN_DIR)/array.c $(ALG_DIR)/random_restart_hill_climbing.c $(ALG_DIR)/simulated_annealing.c $(ALG_DIR)/genetic_algorithm.c $(SRC_DIR)/main.c
-	$(CC) $(CFLAGS) -o $@ $^
+all:
+    $(PYTHON) $(SRC_DIR)/main.py
 
 clean:
-	rm -f $(BIN_DIR)/main
-	rm -rf $(BIN_DIR)/main.dSYM
-	clear
+    find . -type f -name "*.pyc" -delete
+    find . -type d -name "__pycache__" -delete
+    clear
