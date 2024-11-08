@@ -1,4 +1,4 @@
-from adt.magicCube import buildRandomMagicCube, printMagicCube, lineFunction, steepestNeighborMagicCube
+from src.packages.adt.magicCube import buildRandomMagicCube, printMagicCube, lineFunction, steepestNeighborMagicCube
 
 def steepest_ascent_hill_climbing():
     current = buildRandomMagicCube()
@@ -16,5 +16,4 @@ def steepest_ascent_hill_climbing():
 
 if __name__ == "__main__":
     final_state = steepest_ascent_hill_climbing()
-    print("Final Cube State after Steepest Ascent Hill Climbing:")
     printMagicCube(final_state)
