@@ -30,6 +30,11 @@ def printMagicCube(magicCube):
 def selectorMagicCube(magicCube, x, y, z):
     return magicCube[x + (y*5) + (z*25)]
 
+def findNumber(magicCube, n):
+    for i in range(125):
+        if magicCube[i] == n:
+            return i
+        
 # Objective functions
 
 def lineFunction(magicCube):
@@ -106,6 +111,11 @@ def varFunction(magicCube):
     var += (line_sum_4 - MAGIC_CONST) ** 2
 
     return var / 125
+
+functionDict = {
+    "line" : lineFunction,
+    "var" : varFunction
+}
 
 # Neighbors
 
