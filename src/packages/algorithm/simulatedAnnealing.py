@@ -3,7 +3,7 @@ import random
 import copy
 import matplotlib.pyplot as plt
 import numpy as np
-from ..adt.magicCube import random_neighbor, buildRandomMagicCube, lineFunction, varFunction
+from ..adt.magicCube import randomNeighbor, buildRandomMagicCube, lineFunction, varFunction
 
 def decision(probability):
     return ((random.random()) < probability)
@@ -20,7 +20,7 @@ def simulatedAnnealingAlgorithm(magicCube, T, objFunction, isObjectiveFindingMax
   iteration = 0
 
   while (T > 0.01):
-    successorMagicCube = random_neighbor(magicCube)
+    successorMagicCube = randomNeighbor(magicCube)
     
     difference = operatorDifference(objFunction(successorMagicCube),objFunction(magicCube))
 
