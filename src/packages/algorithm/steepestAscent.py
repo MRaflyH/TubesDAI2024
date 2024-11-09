@@ -1,39 +1,50 @@
-from src.packages.adt.magicCube import buildRandomMagicCube, printMagicCube, lineFunction, steepestNeighborMagicCube
+import copy
+import matplotlib.pyplot as plt
+from ..adt.magicCube import buildRandomMagicCube, varFunction, steepestNeighborMagicCube, printMagicCube
 
-def steepest_ascent_hill_climbing():
-    current = buildRandomMagicCube()
-    current_value = lineFunction(current)  
+def steepest_ascent_hill_climbing(initial_cube, objective_function):
+    current_cube = copy.deepcopy(initial_cube)
+    current_value = objective_function(current_cube)
+    objective_values = [current_value]
+    iterations = 0
+    max_iterations = 1000 
 
-    # Mencetak state awal
-    print("Initial State:")
-    printMagicCube(current)
-    print(f"Initial lineFunction value: {current_value}\n")
-
-    while True:
-        neighbor = steepestNeighborMagicCube(current, lineFunction, isValue=True)
-        neighbor_value = lineFunction(neighbor)
-
-        if neighbor_value <= current_value:
-            return current, current_value  
+    while iterations < max_iterations:
+        neighbor_cube = steepestNeighborMagicCube(current_cube, objective_function, isValue=False)
+        neighbor_value = objective_function(neighbor_cube)
+        objective_values.append(neighbor_value)
+        iterations += 1
         
-        current = neighbor
+        print(f"Iteration {iterations}: Current Value = {current_value}, Neighbor Value = {neighbor_value}")
+        
+        if neighbor_value >= current_value:
+            break
+        
+        current_cube = neighbor_cube
         current_value = neighbor_value
 
+    return current_cube, objective_values, iterations
+
+def plot_objective_values(objective_values):
+    plt.plot(range(len(objective_values)), objective_values, marker='o', linestyle='-')
+    plt.title("Steepest Ascent Objective Value to Iteration Plot")
+    plt.xlabel("Iteration Count")
+    plt.ylabel("Objective Function Value")
+    plt.show()
+
 if __name__ == "__main__":
-    result = steepest_ascent_hill_climbing()
-
-    if result:
-        final_state, final_value = result
-
-        # Mencetak hasil setelah Hill-Climbing
-        print("\nFinal State:")
-        printMagicCube(final_state)
-        print(f"Final lineFunction value: {final_value}\n")
-
-        # Mengevaluasi apakah algoritma optimal
-        if final_value == 109:  # Misalkan 109 adalah nilai maksimum yang diharapkan (magic)
-            print("Algoritma berhasil mencapai kondisi optimal.")
-        else:
-            print("Algoritma tidak mencapai kondisi optimal.")
-    else:
-        print("Steepest ascent hill climbing tidak mengembalikan nilai yang diharapkan.")
+    initial_cube = buildRandomMagicCube()
+    print("Initial Cube State:")
+    printMagicCube(initial_cube)
+    
+    # Run the steepest ascent hill-climbing algorithm
+    final_cube, objective_values, iterations = steepest_ascent_hill_climbing(initial_cube, varFunction)
+    
+    # Print the final state and plot results
+    print("\nFinal Cube State:")
+    printMagicCube(final_cube)
+    print("\nNumber of Iterations:", iterations)
+    print("Final Objective Value:", objective_values[-1])
+    
+    # Plot objective values over iterations
+    plot_objective_values(objective_values)

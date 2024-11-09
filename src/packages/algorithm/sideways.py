@@ -1,59 +1,76 @@
-from src.packages.adt.magicCube import buildRandomMagicCube, printMagicCube, lineFunction, swapMagicCube
+import copy
+import random
+import matplotlib.pyplot as plt
+from ..adt.magicCube import buildRandomMagicCube, varFunction, steepestNeighborMagicCube
 
-def hill_climbing_with_sideways(magicCube, objFunction, max_sideways=100, max_iterations=50):
-    current = magicCube.copy()
-    current_value = objFunction(current)
+def hill_climbing_with_sideways(initial_cube, objective_function, max_sideways_moves=100):
+    current_cube = copy.deepcopy(initial_cube)
+    current_value = objective_function(current_cube)
+    objective_values = [current_value]
+    iterations = 0
     sideways_moves = 0
-    iteration_count = 0
 
-    while iteration_count < max_iterations:
+    print("Starting Hill Climbing with Sideways Move:")
+    print(f"Initial Objective Value: {current_value}\n")
+
+    while True:
         # Find the best neighbor
-        best_neighbor = None
-        best_value = current_value
-        improved = False  # To check if we found a better state
+        neighbor_cube = steepestNeighborMagicCube(current_cube, objective_function, isValue=False)
+        neighbor_value = objective_function(neighbor_cube)
+        
+        # Record the objective value for plotting
+        objective_values.append(neighbor_value)
+        iterations += 1
 
-        for i in range(124):
-            for j in range(i + 1, 125):
-                # Create a neighbor by swapping two elements
-                neighbor = current.copy()
-                swapMagicCube(neighbor, i, j)
-                neighbor_value = objFunction(neighbor)
+        # Display the current and neighbor values
+        print(f"Iteration {iterations}:")
+        print(f"  Current Value: {current_value}")
+        print(f"  Neighbor Value: {neighbor_value}")
 
-                # Check for improvement or sideways move
-                if neighbor_value > best_value:
-                    best_neighbor = neighbor
-                    best_value = neighbor_value
-                    sideways_moves = 0  # Reset sideways move count for a new peak
-                    improved = True  # Mark that we found an improvement
-                elif neighbor_value == current_value and sideways_moves < max_sideways:
-                    best_neighbor = neighbor
-                    best_value = neighbor_value
-                    sideways_moves += 1
+        # If we find a better neighbor, update and reset sideways moves
+        if neighbor_value < current_value:
+            current_cube = neighbor_cube
+            current_value = neighbor_value
+            sideways_moves = 0  # Reset sideways moves counter
+            print("  Improved! Moving to better neighbor.\n")
+        
+        elif neighbor_value == current_value:
+            # Allow a sideways move if within the limit
+            if sideways_moves < max_sideways_moves:
+                current_cube = neighbor_cube
+                current_value = neighbor_value
+                sideways_moves += 1
+                print(f"  Sideways move #{sideways_moves} taken.\n")
+            else:
+                print("  Reached maximum sideways moves. Terminating search.\n")
+                break  # Exit if we've reached the max limit of sideways moves
+        
+        else:
+            print("  No improvement and no sideways move possible. Terminating search.\n")
+            break  # Exit if no improvement and max sideways moves are reached
 
-        # Termination conditions
-        if not improved and (sideways_moves >= max_sideways or best_neighbor is None):
-            print(f"Terminated after not improved {iteration_count} iterations with final value: {current_value}")
-            return current
+    return current_cube, objective_values, iterations
 
-        # Move to the best neighbor found
-        current = best_neighbor
-        current_value = best_value
-        iteration_count += 1
-
-        # Print progress
-        print(f"Iteration: {iteration_count}, Current Value: {current_value}, Sideways Moves: {sideways_moves}")
-
-    print(f"Terminated due to reaching maximum iterations ({max_iterations}) with final value: {current_value}")
-    return current
+def plot_objective_values(objective_values):
+    plt.plot(range(len(objective_values)), objective_values, marker='o', linestyle='-')
+    plt.title("Hill Climbing with Sideways Move: Objective Value per Iteration")
+    plt.xlabel("Iteration Count")
+    plt.ylabel("Objective Function Value (Variance)")
+    plt.show()
 
 if __name__ == "__main__":
-    # Generate an initial random magic cube state
-    magicCube = buildRandomMagicCube()
-    print("Initial Magic Cube State:")
-    printMagicCube(magicCube)
+    initial_cube = buildRandomMagicCube()
     
-    # Perform Hill Climbing with Sideways Move
-    final_state = hill_climbing_with_sideways(magicCube, lineFunction)
+    # Run the hill-climbing with sideways move algorithm
+    final_cube, objective_values, iterations = hill_climbing_with_sideways(initial_cube, varFunction)
     
-    print("\nFinal Cube State after Hill Climbing with Sideways Move:")
-    printMagicCube(final_state)
+    # Print the final results
+    print("Initial Cube State:")
+    print(initial_cube)
+    print("\nFinal Cube State:")
+    print(final_cube)
+    print("\nNumber of Iterations:", iterations)
+    print("Final Objective Value (Variance):", objective_values[-1])
+    
+    # Plot the objective values over iterations
+    plot_objective_values(objective_values)

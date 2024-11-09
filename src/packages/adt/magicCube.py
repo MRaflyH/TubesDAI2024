@@ -11,9 +11,8 @@ isPerfectValueDict = {
 # Magic cube builder, printer, selector
 
 def buildRandomMagicCube():
-    magicCube = [x for x in range (1,126)]
+    magicCube = [x for x in range(1, 126)]
     random.shuffle(magicCube)
-
     return magicCube
 
 def printMagicCube(magicCube):
@@ -70,8 +69,6 @@ def lineFunction(magicCube):
 
 def varFunction(magicCube):
     var = 0
-
-    # rows, columns, slices
     for k in range(5):
         for j in range(5):
             line_sum_1 = sum(magicCube[25 * k + 5 * j + i] for i in range(5))
@@ -113,12 +110,8 @@ def varFunction(magicCube):
 # Neighbors
 
 def steepestNeighborMagicCube(magicCube, objectiveFunction, isValue):
-    swapIndex1 = 0
-    swapIndex2 = 1
-    swapMagicCube(magicCube, swapIndex1, swapIndex2)
     bestValue = objectiveFunction(magicCube)
-    swapMagicCube(magicCube, swapIndex1, swapIndex2)
-
+    bestCube = copy.deepcopy(magicCube)
     compareOperator = (lambda x, y: x > y) if isValue else (lambda x, y: x < y)
 
     for i in range(124):
@@ -127,15 +120,9 @@ def steepestNeighborMagicCube(magicCube, objectiveFunction, isValue):
             tempValue = objectiveFunction(magicCube)
             if compareOperator(tempValue, bestValue):
                 bestValue = tempValue
-                swapIndex1 = i
-                swapIndex2 = j
-            swapMagicCube(magicCube, i, j)
-
-    swapMagicCube(magicCube, i, j)
-    neighborMagicCube = copy.deepcopy(magicCube)
-    swapMagicCube(magicCube, i, j)
-
-    return neighborMagicCube
+                bestCube = copy.deepcopy(magicCube)
+            swapMagicCube(magicCube, i, j) 
+    return bestCube
 
 def random_neighbor(magicCube):
     neighborMagicCube = copy.deepcopy(magicCube)
