@@ -124,7 +124,7 @@ def steepestNeighborMagicCube(magicCube, objectiveFunction, isValue):
             swapMagicCube(magicCube, i, j) 
     return bestCube
 
-def random_neighbor(magicCube):
+def randomNeighbor(magicCube):
     neighborMagicCube = copy.deepcopy(magicCube)
     i, j = random.sample(range(125), 2)
     swapMagicCube(neighborMagicCube, i, j)
