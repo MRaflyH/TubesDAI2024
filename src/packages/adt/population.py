@@ -1,4 +1,4 @@
-from magicCube import *
+from ..adt.magicCube import *
 
 class Individual:
     def __init__(self, magicCube, fitnessFunction, isValue):
@@ -55,6 +55,17 @@ class Population:
             current = self.head
             for i in range(index):
                 current = current.next
+        return current
+    
+    def weightedSearch(self, selection):
+        selection = self.totalValue * selection
+        current = self.head
+        tempValueTotal = current.value
+
+        while tempValueTotal < selection:
+            current = current.next
+            tempValueTotal += current.value
+
         return current
 
     def display(self):
