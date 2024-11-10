@@ -1,108 +1,79 @@
+import sys
 import math
 import random
 import copy
-import time
 import matplotlib.pyplot as plt
-import numpy as np
-from ..adt.magicCube import randomNeighbor, buildRandomMagicCube, lineFunction, varFunction
-import numpy as np
-import statistics
-from ..adt.magicCube import randomNeighbor, buildRandomMagicCube, lineFunction, varFunction
+import time
+from ..adt.magicCube import *
 
 def decision(probability):
-  return (random.random() < probability)
+    return ((random.random()) < probability)
 
-def simulatedAnnealingAlgorithm(magicCube, T, objFunction, isObjectiveFindingMaximum):
-  operatorDifference =  (lambda x, y : x - y) if isObjectiveFindingMaximum  else (lambda x, y : y - x)
-def coolingFunction(T):
-  return T * 0.9999
+def simulatedAnnealingAlgorithm(initialCube, T, objFunction, valueObjective):
+  start = time.time()
+  magicCube = copy.deepcopy(initialCube)
 
-def simulatedAnnealingAlgorithm(magicCube, T, maxIteration, objFunction, isObjectiveFindingMaximum):
-  operatorDifference =  (lambda x, y : x - y) if isObjectiveFindingMaximum  else (lambda x, y : y - x)
+  operatorDifference =  (lambda x, y : x - y) if valueObjective  else (lambda x, y : y - x)
 
-  # Plot Configuration
-  plt.title("SA Formula to Iteration Plot")
-  plt.xlabel("Iteration Count")
-  plt.ylabel("Simulated Annealing Formula Value")
-  plt.title("SA Formula to Iteration Plot")
-  plt.xlabel("Iteration Count")
-  plt.ylabel("Simulated Annealing Formula Value")
   SA_formula_array = []
-  iteration_array = [] 
-  iteration_array = list(range(1, maxIteration+1))
+  value_array = []
   iteration = 0
+  currentValue = objFunction(magicCube)
+  value_array.append(currentValue)
+  SA_formula = 0
+  totaldiff = []
 
-  while (T > 0.01):
-    successorMagicCube = randomNeighbor(magicCube)
+  while (T > 0 and currentValue != valueObjective):
+    index1, index2 = random.sample(range(125), 2)
+    swapMagicCube(magicCube, index1, index2)
+    successorValue = objFunction(magicCube)
+    difference = operatorDifference(successorValue, currentValue)
     
-    difference = operatorDifference(objFunction(successorMagicCube),objFunction(magicCube))
-
-    SA_formula = (math.e)**(difference/T)
-  difference_array = []
-  count_go_to_worse = 0
-
-
-  while (iteration < maxIteration):
-    successorMagicCube = randomNeighbor(magicCube)
-    
-    difference = operatorDifference(objFunction(successorMagicCube),objFunction(magicCube))
-    
-    if (difference > 0 ) :
-      magicCube = copy.deepcopy(successorMagicCube)
-    
-    if(SA_formula > 1):
     if (difference >= 0) :
-      magicCube = copy.deepcopy(successorMagicCube)
+      currentValue = successorValue
       SA_formula_array.append(1)
     else:
+      SA_formula = (math.e)**(difference/T)
       SA_formula_array.append(SA_formula)
+      if decision(SA_formula):
+        currentValue = successorValue
+      else:
+        swapMagicCube(magicCube, index1, index2)
 
-    iteration_array.append(iteration)
-      if(decision(SA_formula)):
-        magicCube = copy.deepcopy(successorMagicCube)
-        count_go_to_worse += 1
-      difference_array.append(difference)
-      
-      
+    # totaldiff.append(difference)
+    value_array.append(currentValue)
+
+    # if SA_formula > 0.5 and SA_formula < 0.99:
+    # print(iteration, SA_formula, currentValue, time.time() - start, T)
+
     iteration += 1
     T *= 0.999 # Minus T in every iteration
+    # T *= 0.9 # Minus T in every iteration
+    if T <= 1e-38:
+      T = 0
+  
+  runtime = time.time() - start
+  # plt.hist(totaldiff)
+  return initialCube, magicCube, currentValue, value_array, runtime, iteration, SA_formula_array
+  return initial_cube, final_cube, final_value, objective_value_iterations, runtime, iterations
 
-  # Display Chart
-  plt.plot(iteration_array, SA_formula_array)
+def plotObjectiveValues(SA_formula_array):
+  plt.title("SA Formula to Iteration Plot")
+  plt.xlabel("Iteration Count")
+  plt.ylabel("Simulated Annealing Formula Value")
+  plt.plot(range(len(SA_formula_array)), SA_formula_array)
   plt.show()
-    T = coolingFunction(T)
-
-  # Display Chart
-  # plt.plot(iteration_array, SA_formula_array)
-  # plt.show()
-
-  print("Jumlah Ganti ke Successor yang Lebih Buruk : ",count_go_to_worse)
-
-  return magicCube, (statistics.median(difference_array))
-
-  return magicCube
 
 if __name__ == "__main__":
   test = buildRandomMagicCube()
-  print(lineFunction(test))
-  print(lineFunction(simulatedAnnealingAlgorithm(test, 1000000000000000, lineFunction, True)))
-  hasilLine = []
-  hasilVar = []
-  waktu = []
 
-  for i in range(10):
-    test = buildRandomMagicCube()
-    start = time.time()
-    testResult = simulatedAnnealingAlgorithm(test, 5, 50000, varFunction, False)
-    hasilLine.append(lineFunction(testResult[0]))
-    hasilVar.append(varFunction(testResult[0]))
+  functionName = "var"
+  objectiveFunction = functionDict[functionName]
+  valueObjective = functionValueDict[functionName]
 
-    print(lineFunction(testResult[0]))
-    print(testResult[1])
-    end = time.time()
-    waktu.append(end-start)
-
-  print("Rata-Rata Hasil Line : ", sum(hasilLine)/len(hasilLine))
-  print("Rata-Rata Hasil Var : ", sum(hasilVar)/len(hasilVar))
-  print("Rata-Rata Waktu : ", sum(waktu)/len(waktu))
+  initialCube, magicCubeSA, currentValue, value_array, runtime, iteration, SA_formula_array = simulatedAnnealingAlgorithm(test, 1000000000, objectiveFunction, valueObjective)
+  printMagicCube(magicCubeSA)
+  print(objectiveFunction(magicCubeSA))
+  plotObjectiveValues(SA_formula_array)
+  print(runtime)
   exit
