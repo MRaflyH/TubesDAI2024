@@ -1,11 +1,3 @@
-# TubesDAI2024
+Code ini untuk bonus. 
 
-Untuk run program, jalankan berikut di terminal yang sudah dalam direktori program
-> cd bin
-
-> make
-
-Setelah selesai menggunakan program, jalankan berikut di terminal yang sudah dalam direktori program
-> cd bin
-
-> make clean
+Anda bisa melihatnya pada web: https://magic-cube-replay.vercel.app/
