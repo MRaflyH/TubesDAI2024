@@ -105,7 +105,7 @@ def varFunction(magicCube):
     var += (line_sum_3 - MAGIC_CONST) ** 2
     var += (line_sum_4 - MAGIC_CONST) ** 2
 
-    return var / 125
+    return var / 109
 
 functionDict = {
     "line" : lineFunction,
@@ -119,8 +119,10 @@ functionValueDict = {
 # Neighbors
 
 def steepestNeighborMagicCube(magicCube, objectiveFunction, isValue):
-    bestValue = objectiveFunction(magicCube)
     bestCube = copy.deepcopy(magicCube)
+    swapMagicCube(bestCube, 0, 1) 
+    bestValue = objectiveFunction(bestCube)
+    
     compareOperator = (lambda x, y: x > y) if isValue else (lambda x, y: x < y)
 
     for i in range(124):
