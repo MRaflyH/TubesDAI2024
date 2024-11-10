@@ -51,11 +51,11 @@ if __name__ == "__main__":
     initial_cube, final_cube, final_value, objective_value_iterations, runtime, iterations = steepest_ascent_hill_climbing(initial_cube, objective_function, objective_value)
     
     # Print the final state and plot results
-    print("\Initial Cube State:")
+    print("\nInitial Cube State:")
     printMagicCube(initial_cube)
     print("\nFinal Cube State:")
     printMagicCube(final_cube)
-    print("Final Objective Value:", final_value)
+    print("\nFinal Objective Value:", final_value)
     print("Runtime:", runtime, "sec")
     print("Number of Iterations:", iterations)
     # print("Final Objective Value:", objective_values[-1])
