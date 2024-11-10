@@ -3,11 +3,6 @@ import copy
 
 MAGIC_CONST = 315
 
-isPerfectValueDict = {
-    "line" : 109,
-    "var" : 0
-}
-
 # Magic cube builder, printer, selector
 
 def buildRandomMagicCube():
@@ -117,6 +112,10 @@ functionDict = {
     "var" : varFunction
 }
 
+functionValueDict = {
+    "line" : 109,
+    "var" : 0
+}
 # Neighbors
 
 def steepestNeighborMagicCube(magicCube, objectiveFunction, isValue):
