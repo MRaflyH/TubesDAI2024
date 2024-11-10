@@ -1,13 +1,15 @@
 import copy
 import matplotlib.pyplot as plt
-from ..adt.magicCube import buildRandomMagicCube, varFunction, steepestNeighborMagicCube, printMagicCube
+from ..adt.magicCube import buildRandomMagicCube, varFunction, lineFunction, steepestNeighborMagicCube, printMagicCube
 
-def steepest_ascent_hill_climbing(initial_cube, objective_function):
+def steepest_ascent_hill_climbing(initial_cube, objective_function, is_value):
     current_cube = copy.deepcopy(initial_cube)
     current_value = objective_function(current_cube)
     objective_values = [current_value]
     iterations = 0
     max_iterations = 1000 
+
+    while_operator = (lambda x, y: x > y) if is_value else (lambda x, y: x < y)
 
     while iterations < max_iterations:
         neighbor_cube = steepestNeighborMagicCube(current_cube, objective_function, isValue=False)
@@ -43,8 +45,10 @@ if __name__ == "__main__":
     # Print the final state and plot results
     print("\nFinal Cube State:")
     printMagicCube(final_cube)
+    print(varFunction(final_cube))
+    print(lineFunction(final_cube))
     print("\nNumber of Iterations:", iterations)
-    print("Final Objective Value:", objective_values[-1])
+    # print("Final Objective Value:", objective_values[-1])
     
     # Plot objective values over iterations
     plot_objective_values(objective_values)
