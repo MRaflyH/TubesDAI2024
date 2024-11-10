@@ -20,8 +20,8 @@ def geneticAlgorithm(initialPopulationCount, maxIteration, objectiveFunction, fi
             parent1 = population.weightedSearch(random.random()).magicCube
             parent2 = population.weightedSearch(random.random()).magicCube
             child1, child2 = crossover(parent1, parent2)
-            if (random.random() < 0.1): mutation(child1)
-            if (random.random() < 0.1): mutation(child2)
+            if (random.random() < 0.1): child1 = mutation(child1)
+            if (random.random() < 0.1): child2 = mutation(child2)
             childrenPopulation.append(child1, fitnessFunction, isValue)
             childrenPopulation.append(child2, fitnessFunction, isValue)
         population.merge(childrenPopulation, True)
@@ -49,7 +49,6 @@ def crossover(magicCube1, magicCube2):
         parentIndex2 = findNumber(magicCube2, chromosome[i])
         childIndex1 = findNumber(child1, chromosome[i])
         childIndex2 = findNumber(child2, chromosome[i])
-        # print(parentIndex1, parentIndex2, childIndex1, childIndex2)
         swapMagicCube(child1, childIndex1, parentIndex2)
         swapMagicCube(child2, childIndex2, parentIndex1)
 
@@ -66,8 +65,6 @@ def lineFitness(magicCube):
 
 if __name__ == "__main__":
     population, history, runtime = geneticAlgorithm(4, 12, lineFunction, lineFitness, True)
-    population.display()
-    # for i in range(len(history)):
-    #     for j in range(len(history[i])):
+    # population.display()
     print(history)
     print(runtime)
