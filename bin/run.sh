@@ -1,3 +1,3 @@
-#!/bin/bash
+g#!/bin/bash
 
 ./main

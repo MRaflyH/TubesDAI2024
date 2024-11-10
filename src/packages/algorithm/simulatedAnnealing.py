@@ -1,51 +1,69 @@
 import math
 import random
 import copy
+import time
 import matplotlib.pyplot as plt
 import numpy as np
 from ..adt.magicCube import random_neighbor, buildRandomMagicCube, lineFunction, varFunction
 
 def decision(probability):
-    return ((random.random()) < probability)
+  return ((random.random()) < probability)
 
-def simulatedAnnealingAlgorithm(magicCube, T, objFunction, isObjectiveFindingMaximum):
+def coolingFunction(T):
+  return T * 0.999
+
+def simulatedAnnealingAlgorithm(magicCube, T, maxIteration, objFunction, isObjectiveFindingMaximum):
   operatorDifference =  (lambda x, y : x - y) if isObjectiveFindingMaximum  else (lambda x, y : y - x)
 
-  # Plot Configuration
   plt.title("SA Formula to Iteration Plot")
   plt.xlabel("Iteration Count")
   plt.ylabel("Simulated Annealing Formula Value")
   SA_formula_array = []
-  iteration_array = [] 
+  iteration_array = list(range(1, maxIteration+1))
   iteration = 0
 
-  while (T > 0.01):
+  while (iteration < maxIteration):
     successorMagicCube = random_neighbor(magicCube)
     
     difference = operatorDifference(objFunction(successorMagicCube),objFunction(magicCube))
-
-    SA_formula = (math.e)**(difference/T)
     
-    if (difference > 0 ) :
+    if (difference >= 0) :
       magicCube = copy.deepcopy(successorMagicCube)
-    
-    if(SA_formula > 1):
       SA_formula_array.append(1)
     else:
+      SA_formula = (math.e)**(difference/T)
       SA_formula_array.append(SA_formula)
-
-    iteration_array.append(iteration)
+      if(decision(SA_formula)):
+        magicCube = copy.deepcopy(successorMagicCube)
+      
     iteration += 1
-    T *= 0.999 # Minus T in every iteration
+    T = coolingFunction(T)
 
   # Display Chart
-  plt.plot(iteration_array, SA_formula_array)
-  plt.show()
+  # plt.plot(iteration_array, SA_formula_array)
+  # plt.show()
 
   return magicCube
 
 if __name__ == "__main__":
-  test = buildRandomMagicCube()
-  print(lineFunction(test))
-  print(lineFunction(simulatedAnnealingAlgorithm(test, 1000000000000000, lineFunction, True)))
+  hasilLine = []
+  hasilVar = []
+  hasilTest = []
+  waktu = []
+
+  for i in range(5):
+    test = buildRandomMagicCube()
+    start = time.time()
+    testResult = simulatedAnnealingAlgorithm(test, 1000000000, 200000, varFunction, False)
+    hasilLine.append(lineFunction(testResult))
+    hasilVar.append(varFunction(testResult))
+
+    print(lineFunction(testResult))
+    end = time.time()
+    waktu.append(end-start)
+
+  print("Hasil Line", sum(hasilLine)/len(hasilLine))
+  print("Hasil Var", sum(hasilVar)/len(hasilVar))
+  print("Hasil Test", sum(hasilTest)/len(hasilTest))
+  print("Rata-Rata Waktu", sum(waktu)/len(waktu))
   exit
