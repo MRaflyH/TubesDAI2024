@@ -45,7 +45,7 @@ def hill_climbing_with_sideways(initial_cube, objective_function, is_value, max_
             break
 
     final_cube = current_cube
-    final_value = objective_values[-1]
+    final_value = current_value
     runtime = time.time() - start
 
     return initial_cube, final_cube, final_value, objective_values, runtime, iterations
@@ -67,10 +67,10 @@ if __name__ == "__main__":
     initial_cube, final_cube, final_value, objective_values, runtime, iterations = hill_climbing_with_sideways(initial_cube, objective_function, objective_value)
     
     print("\nInitial Cube State:")
-    print(initial_cube)
-    print("\nFinal Cube State:")
-    print(final_cube)
-    print("\nFinal Objective Value:", final_value)
+    printMagicCube(initial_cube)
+    print("Final Cube State:")
+    printMagicCube(final_cube)
+    print("Final Objective Value:", final_value)
     print("Runtime:", runtime, "sec")
     print("Number of Iterations:", iterations)
     plot_objective_values(objective_values)

@@ -28,7 +28,7 @@ def steepest_ascent_hill_climbing(initial_cube, objective_function, is_value):
         current_value = neighbor_value
 
     final_cube = current_cube
-    final_value = objective_value_iterations[-1]
+    final_value = current_value
     runtime = time.time() - start
 
     return initial_cube, final_cube, final_value, objective_value_iterations, runtime, iterations
@@ -45,17 +45,17 @@ if __name__ == "__main__":
     
     function_name = "var"
     objective_function = functionDict[function_name]
-    objective_value = functionValueDict[function_name]
+    value_objective = functionValueDict[function_name]
 
     # Run the steepest ascent hill-climbing algorithm
-    initial_cube, final_cube, final_value, objective_value_iterations, runtime, iterations = steepest_ascent_hill_climbing(initial_cube, objective_function, objective_value)
+    initial_cube, final_cube, final_value, objective_value_iterations, runtime, iterations = steepest_ascent_hill_climbing(initial_cube, objective_function, value_objective)
     
     # Print the final state and plot results
     print("\nInitial Cube State:")
     printMagicCube(initial_cube)
-    print("\nFinal Cube State:")
+    print("Final Cube State:")
     printMagicCube(final_cube)
-    print("\nFinal Objective Value:", final_value)
+    print("Final Objective Value:", final_value)
     print("Runtime:", runtime, "sec")
     print("Number of Iterations:", iterations)
     # print("Final Objective Value:", objective_values[-1])
