@@ -57,7 +57,7 @@ if __name__ == "__main__":
     printMagicCube(final_cube)
     print("Final Objective Value:", final_value)
     print("Runtime:", runtime, "sec")
-    print("\nNumber of Iterations:", iterations)
+    print("Number of Iterations:", iterations)
     # print("Final Objective Value:", objective_values[-1])
     
     # Plot objective values over iterations
