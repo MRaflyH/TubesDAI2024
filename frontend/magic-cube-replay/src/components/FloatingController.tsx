@@ -12,13 +12,13 @@ const GlassContainer = styled(motion.div)`
   border-radius: 1rem;
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
-  width: 500px; /* Increased width */
+  width: 500px;
   cursor: grab;
-  display: flex; /* Use flexbox for layout */
-  flex-direction: column; /* Arrange elements vertically */
-  align-items: center; /* Align items to center */
-  padding: 20px; /* Add padding for better spacing */
-  gap: 10px; /* Add gap between items */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  gap: 10px;
 `;
 
 const ControlRow = styled.div`
@@ -27,13 +27,6 @@ const ControlRow = styled.div`
   justify-content: space-between;
   gap: 20px;
   align-items: center;
-`;
-
-const SliderWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
 `;
 
 interface FloatingControllerProps {
@@ -45,6 +38,9 @@ interface FloatingControllerProps {
   handleProgressChange: (value: number) => void;
   handleSpeedChange: (value: number) => void;
   handleReset: () => void;
+  gap: number;
+  handleGapChange: (value: number) => void;
+  initialGap: number;
 }
 
 const FloatingController: React.FC<FloatingControllerProps> = ({
@@ -56,84 +52,56 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
   handleProgressChange,
   handleSpeedChange,
   handleReset,
+  gap,
+  handleGapChange,
+  initialGap,
 }) => {
-  const [speed, setSpeed] = useState(playbackSpeed);
   const [selectedIteration, setSelectedIteration] = useState(currentIndex);
   const [detailVisible, setDetailVisible] = useState(false);
   const [selectedAlgorithm, setSelectedAlgorithm] = useState(
     "Steepest Ascent Hill-Climbing"
   );
+  const [dragEnabled, setDragEnabled] = useState(false);
 
   useEffect(() => {
-    setSelectedIteration(currentIndex); // Sync selected iteration with currentIndex
+    setSelectedIteration(currentIndex);
   }, [currentIndex]);
 
-  const handleIterationChange = (value: number) => {
-    setSelectedIteration(value);
-    handleProgressChange(value); // Trigger progress change
+  const handleGapSliderChange = (value: number) => {
+    const normalizedGap = value === 0 ? initialGap : initialGap + value * 0.2;
+    handleGapChange(normalizedGap);
   };
-
-  const showDetailModal = () => {
-    setDetailVisible(true);
-  };
-
-  const handleDetailClose = () => {
-    setDetailVisible(false);
-  };
-
-  const onSpeedChange = (value: number) => {
-    setSpeed(value);
-    handleSpeedChange(value);
-  };
-
-  const handleAlgorithmChange = (value: string) => {
-    setSelectedAlgorithm(value);
-  };
-
-  // Prepare data for the table
-  const columns = [
-    {
-      title: "Index",
-      dataIndex: "index",
-      key: "index",
-    },
-    {
-      title: "Value",
-      dataIndex: "value",
-      key: "value",
-    },
-  ];
-
-  const dataSource = replayData[selectedIteration].map(
-    (value: number, index: number) => ({
-      index: index + 1,
-      value: value,
-    })
-  );
 
   return (
     <GlassContainer
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      drag
+      drag={dragEnabled}
       dragConstraints={{
         left: 0,
         right: 0,
         top: 0,
         bottom: 0,
       }}
-      dragElastic={0.1}
+      dragElastic={0.4}
+      dragSnapToOrigin={true}
+      onPointerDown={(e) => {
+        // Enable drag only when the pointer is on the container background
+        if (e.target === e.currentTarget) {
+          setDragEnabled(true);
+        }
+      }}
+      onPointerUp={() => setDragEnabled(false)}
     >
-      {/* Algorithm Selection */}
       <Text className="mb-2 text-white text-left w-full">
         Select Algorithm:
       </Text>
       <ControlRow>
         <Select
           value={selectedAlgorithm}
-          onChange={handleAlgorithmChange}
-          className="w-[80%]" 
+          onChange={setSelectedAlgorithm}
+          className="w-[80%]"
         >
           <Select.Option value="Steepest Ascent Hill-Climbing">
             Steepest Ascent Hill-Climbing
@@ -176,27 +144,15 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
         </div>
       </ControlRow>
 
-      {/* Sliders for Progress and Playback Speed */}
       <ControlRow>
-        <Text
-          style={{
-            marginBottom: "8px",
-            color: "#FFFFFF",
-            textAlign: "left",
-            width: "45%",
-          }}
-        >
+        <Text style={{ color: "#FFFFFF", textAlign: "left", width: "30%" }}>
           Progress Slider:
         </Text>
-        <Text
-          style={{
-            marginBottom: "8px",
-            color: "#FFFFFF",
-            textAlign: "left",
-            width: "45%",
-          }}
-        >
+        <Text style={{ color: "#FFFFFF", textAlign: "left", width: "30%" }}>
           Playback Speed:
+        </Text>
+        <Text style={{ color: "#FFFFFF", textAlign: "left", width: "30%" }}>
+          Gap Between Cubes:
         </Text>
       </ControlRow>
       <ControlRow>
@@ -205,29 +161,35 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
           max={replayData.length - 1}
           value={currentIndex}
           onChange={handleProgressChange}
-          style={{ width: "45%" }}
-          handleStyle={{ touchAction: "none" }} 
+          style={{ width: "30%" }}
+          handleStyle={{ touchAction: "none" }}
         />
         <Slider
-          min={0.5}
-          max={8}
-          step={0.1}
-          value={speed}
-          onChange={onSpeedChange}
-          style={{ width: "45%" }}
+          min={1}
+          max={10}
+          step={1}
+          value={playbackSpeed}
+          onChange={handleSpeedChange}
+          style={{ width: "30%" }}
+        />
+        <Slider
+          min={0}
+          max={10}
+          step={1}
+          value={(gap - initialGap) * 10}
+          onChange={handleGapSliderChange}
+          style={{ width: "30%" }}
         />
       </ControlRow>
 
-      {/* Iteration Selection */}
       <Text className="mb-2 text-white text-left w-full">
         Select Iteration:
       </Text>
       <ControlRow>
         <Select
           value={selectedIteration}
-          onChange={handleIterationChange}
-          className="w-[80%]" // Tailwind class for 50% width
-          onMouseDown={(e) => e.stopPropagation()}
+          onChange={setSelectedIteration}
+          className="w-[80%]"
         >
           {replayData.map((_, index) => (
             <Select.Option key={index} value={index}>
@@ -235,21 +197,30 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
             </Select.Option>
           ))}
         </Select>
-        <Button type="default" onClick={showDetailModal} className="w-[40]">
+        <Button
+          type="default"
+          onClick={() => setDetailVisible(true)}
+          className="w-[40]"
+        >
           Show Details
         </Button>
       </ControlRow>
 
-      {/* Modal for displaying iteration details */}
       <Modal
         title={`Iteration ${selectedIteration + 1} Details`}
         visible={detailVisible}
-        onCancel={handleDetailClose}
+        onCancel={() => setDetailVisible(false)}
         footer={null}
       >
         <Table
-          dataSource={dataSource}
-          columns={columns}
+          dataSource={replayData[selectedIteration].map((value, index) => ({
+            index: index + 1,
+            value,
+          }))}
+          columns={[
+            { title: "Index", dataIndex: "index" },
+            { title: "Value", dataIndex: "value" },
+          ]}
           rowKey="index"
           pagination={false}
         />

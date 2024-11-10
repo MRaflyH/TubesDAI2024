@@ -1,17 +1,16 @@
 import { useState, useEffect } from "react";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { Canvas, useThree } from "@react-three/fiber";
+import { OrbitControls, Text } from "@react-three/drei";
 import FloatingController from "./FloatingController";
+import * as THREE from "three";
 
 const MagicCubeReplayPlayer = () => {
   const [replayData, setReplayData] = useState<number[][]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
-  const [playbackInterval, setPlaybackInterval] =
-    useState<ReturnType<typeof setTimeout> | null>(null);
+  const [gap, setGap] = useState(0.1);
 
-  // Mock data to simulate replay data for each iteration
   useEffect(() => {
     const generatedData = Array.from({ length: 100 }, () => {
       return Array.from(
@@ -35,14 +34,8 @@ const MagicCubeReplayPlayer = () => {
           }
         });
       }, 1000 / playbackSpeed);
-      setPlaybackInterval(interval);
 
       return () => clearInterval(interval);
-    } else {
-      if (playbackInterval) {
-        clearInterval(playbackInterval);
-        setPlaybackInterval(null);
-      }
     }
   }, [isPlaying, playbackSpeed, replayData]);
 
@@ -56,12 +49,18 @@ const MagicCubeReplayPlayer = () => {
 
   const handleProgressChange = (value: number) => {
     setCurrentIndex(value);
+    if (value === replayData.length - 1) {
+      setIsPlaying(false);
+    }
   };
 
-  // Define handleReset function
   const handleReset = () => {
     setCurrentIndex(0);
     setIsPlaying(false);
+  };
+
+  const handleGapChange = (value: number) => {
+    setGap(value);
   };
 
   return (
@@ -69,40 +68,51 @@ const MagicCubeReplayPlayer = () => {
       <div className="flex justify-center items-center w-full h-screen overflow-hidden">
         <Canvas
           className="h-full w-full"
-          camera={{ position: [0, 0, 10], fov: 75 }}
+          camera={{ position: [10, 10, 10], fov: 40 }}
         >
-          <OrbitControls enableZoom={true} maxDistance={20} minDistance={6} />
+          <ZoomOrbitControls gap={gap} />
           <ambientLight intensity={0.5} />
           <pointLight position={[10, 10, 10]} />
+
           {replayData.length > 0 && replayData[currentIndex] && (
             <group>
               {replayData[currentIndex].map((value, index) => {
-                const x = (index % 5) - 2;
-                const y = Math.floor((index % 25) / 5) - 2;
-                const z = Math.floor(index / 25) - 2;
+                const x = (index % 5) * (1 + gap) - 2 * (1 + gap);
+                const y =
+                  Math.floor((index % 25) / 5) * (1 + gap) - 2 * (1 + gap);
+                const z = Math.floor(index / 25) * (1 + gap) - 2 * (1 + gap);
+
                 return (
-                  <mesh
-                    key={index}
-                    position={[x, y, z]}
-                    onPointerOver={(e) => {
-                      e.stopPropagation();
-                      document.body.style.cursor = "grab";
-                    }}
-                    onPointerOut={() => {
-                      document.body.style.cursor = "default";
-                    }}
-                  >
-                    <boxGeometry args={[0.9, 0.9, 0.9]} />
-                    <meshStandardMaterial
-                      color={`hsl(${(value / 125) * 360}, 100%, 50%)`}
-                    />
-                  </mesh>
+                  <group key={index} position={[x, y, z]}>
+                    <mesh
+                      onPointerOver={(e) => {
+                        e.stopPropagation();
+                        document.body.style.cursor = "pointer";
+                      }}
+                      onPointerOut={() => {
+                        document.body.style.cursor = "default";
+                      }}
+                    >
+                      <boxGeometry args={[0.9, 0.9, 0.9]} />
+                      <meshStandardMaterial
+                        color={`hsl(${(value / 125) * 360}, 100%, 50%)`}
+                      />
+                    </mesh>
+                    <Text
+                      position={[0, 0, 0.51]}
+                      fontSize={0.2}
+                      color="#ffffff"
+                    >
+                      {value}
+                    </Text>
+                  </group>
                 );
               })}
             </group>
           )}
         </Canvas>
       </div>
+
       {replayData.length > 0 && (
         <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 z-10 cursor-grab">
           <FloatingController
@@ -113,12 +123,53 @@ const MagicCubeReplayPlayer = () => {
             handlePlayPause={handlePlayPause}
             handleProgressChange={handleProgressChange}
             handleSpeedChange={handleSpeedChange}
-            handleReset={handleReset} // Pass handleReset here
+            handleReset={handleReset}
+            gap={gap}
+            handleGapChange={handleGapChange}
+            initialGap={0.1}
           />
         </div>
       )}
     </div>
   );
 };
+
+// Custom Zoom and Pan Control Component
+function ZoomOrbitControls({ gap }: { gap: number }) {
+  const { camera, gl, mouse } = useThree();
+
+  useEffect(() => {
+    const handleWheel = (event: WheelEvent) => {
+      if (gap === 10) {
+        const zoomFactor = event.deltaY * 0.002;
+        const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(
+          camera
+        );
+        const direction = vector.sub(camera.position).normalize();
+        camera.position.addScaledVector(direction, zoomFactor);
+        camera.updateProjectionMatrix();
+      }
+    };
+
+    gl.domElement.addEventListener("wheel", handleWheel);
+
+    return () => {
+      gl.domElement.removeEventListener("wheel", handleWheel);
+    };
+  }, [camera, gl, mouse, gap]);
+
+  return (
+    <OrbitControls
+      target={[0, 0, 0]}
+      enableZoom={true}
+      enablePan={true}
+      maxDistance={50}
+      mouseButtons={{
+        LEFT: THREE.MOUSE.ROTATE,
+        MIDDLE: THREE.MOUSE.PAN,
+      }}
+    />
+  );
+}
 
 export default MagicCubeReplayPlayer;
