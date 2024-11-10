@@ -122,16 +122,20 @@ def steepestNeighborMagicCube(magicCube, objectiveFunction, isValue):
     bestCube = copy.deepcopy(magicCube)
     swapMagicCube(bestCube, 0, 1) 
     bestValue = objectiveFunction(bestCube)
-    
-    compareOperator = (lambda x, y: x > y) if isValue else (lambda x, y: x < y)
+
+    compareOperator = (lambda x, y: x >= y) if isValue else (lambda x, y: x <= y)
 
     for i in range(124):
         for j in range(i + 1, 125):
             swapMagicCube(magicCube, i, j)
             tempValue = objectiveFunction(magicCube)
             if compareOperator(tempValue, bestValue):
-                bestValue = tempValue
-                bestCube = copy.deepcopy(magicCube)
+                if tempValue != bestValue:
+                    bestValue = tempValue
+                    bestCube = copy.deepcopy(magicCube)
+                elif random.random() < 0.5:
+                    bestValue = tempValue
+                    bestCube = copy.deepcopy(magicCube)
             swapMagicCube(magicCube, i, j) 
     return bestCube
 

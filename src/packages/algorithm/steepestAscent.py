@@ -16,7 +16,6 @@ def steepest_ascent_hill_climbing(initial_cube, objective_function, is_value):
     while True:
         neighbor_cube = steepestNeighborMagicCube(current_cube, objective_function, is_value)
         neighbor_value = objective_function(neighbor_cube)
-        objective_value_iterations.append(neighbor_value)
         iterations += 1
         
         print(f"Iteration {iterations}: Current Value = {current_value}, Neighbor Value = {neighbor_value}")
@@ -24,6 +23,7 @@ def steepest_ascent_hill_climbing(initial_cube, objective_function, is_value):
         if compare_operator(neighbor_value, current_value):
             break
         
+        objective_value_iterations.append(neighbor_value)
         current_cube = neighbor_cube
         current_value = neighbor_value
 

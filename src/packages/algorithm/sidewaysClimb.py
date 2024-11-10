@@ -3,7 +3,7 @@ import time
 import matplotlib.pyplot as plt
 from ..adt.magicCube import *
 
-def hill_climbing_with_sideways(initial_cube, objective_function, is_value, max_sideways_moves=100):
+def hill_climbing_with_sideways(initial_cube, objective_function, is_value, max_sideways_moves=20):
     start = time.time()
 
     current_cube = copy.deepcopy(initial_cube)
@@ -18,7 +18,6 @@ def hill_climbing_with_sideways(initial_cube, objective_function, is_value, max_
         neighbor_cube = steepestNeighborMagicCube(current_cube, objective_function, is_value)
         neighbor_value = objective_function(neighbor_cube)
         
-        objective_values.append(neighbor_value)
         iterations += 1
 
         print(f"Iteration {iterations}: Current Value = {current_value}, Neighbor Value = {neighbor_value}")
@@ -26,7 +25,8 @@ def hill_climbing_with_sideways(initial_cube, objective_function, is_value, max_
         if compare_operator(neighbor_value, current_value):
             current_cube = neighbor_cube
             current_value = neighbor_value
-            # sideways_moves = 0  
+            sideways_moves = 0  
+            objective_values.append(neighbor_value)
             print("  Improved! Moving to better neighbor.")
         
         elif neighbor_value == current_value:
@@ -34,6 +34,7 @@ def hill_climbing_with_sideways(initial_cube, objective_function, is_value, max_
                 current_cube = neighbor_cube
                 current_value = neighbor_value
                 sideways_moves += 1
+                objective_values.append(neighbor_value)
                 print(f"  Sideways move #{sideways_moves} taken.")
             else:
                 print("  Reached maximum sideways moves. Terminating search.")
