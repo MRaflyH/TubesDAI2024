@@ -4,13 +4,14 @@ import copy
 import time
 import matplotlib.pyplot as plt
 import numpy as np
+import statistics
 from ..adt.magicCube import randomNeighbor, buildRandomMagicCube, lineFunction, varFunction
 
 def decision(probability):
-  return ((random.random()) < probability)
+  return (random.random() < probability)
 
 def coolingFunction(T):
-  return T * 0.999
+  return T * 0.9999
 
 def simulatedAnnealingAlgorithm(magicCube, T, maxIteration, objFunction, isObjectiveFindingMaximum):
   operatorDifference =  (lambda x, y : x - y) if isObjectiveFindingMaximum  else (lambda x, y : y - x)
@@ -21,9 +22,12 @@ def simulatedAnnealingAlgorithm(magicCube, T, maxIteration, objFunction, isObjec
   SA_formula_array = []
   iteration_array = list(range(1, maxIteration+1))
   iteration = 0
+  difference_array = []
+  count_go_to_worse = 0
+
 
   while (iteration < maxIteration):
-    successorMagicCube = random_neighbor(magicCube)
+    successorMagicCube = randomNeighbor(magicCube)
     
     difference = operatorDifference(objFunction(successorMagicCube),objFunction(magicCube))
     
@@ -35,6 +39,9 @@ def simulatedAnnealingAlgorithm(magicCube, T, maxIteration, objFunction, isObjec
       SA_formula_array.append(SA_formula)
       if(decision(SA_formula)):
         magicCube = copy.deepcopy(successorMagicCube)
+        count_go_to_worse += 1
+      difference_array.append(difference)
+      
       
     iteration += 1
     T = coolingFunction(T)
@@ -43,27 +50,28 @@ def simulatedAnnealingAlgorithm(magicCube, T, maxIteration, objFunction, isObjec
   # plt.plot(iteration_array, SA_formula_array)
   # plt.show()
 
-  return magicCube
+  print("Jumlah Ganti ke Successor yang Lebih Buruk : ",count_go_to_worse)
+
+  return magicCube, (statistics.median(difference_array))
 
 if __name__ == "__main__":
   hasilLine = []
   hasilVar = []
-  hasilTest = []
   waktu = []
 
-  for i in range(5):
+  for i in range(10):
     test = buildRandomMagicCube()
     start = time.time()
-    testResult = simulatedAnnealingAlgorithm(test, 1000000000, 200000, varFunction, False)
-    hasilLine.append(lineFunction(testResult))
-    hasilVar.append(varFunction(testResult))
+    testResult = simulatedAnnealingAlgorithm(test, 5, 50000, varFunction, False)
+    hasilLine.append(lineFunction(testResult[0]))
+    hasilVar.append(varFunction(testResult[0]))
 
-    print(lineFunction(testResult))
+    print(lineFunction(testResult[0]))
+    print(testResult[1])
     end = time.time()
     waktu.append(end-start)
 
-  print("Hasil Line", sum(hasilLine)/len(hasilLine))
-  print("Hasil Var", sum(hasilVar)/len(hasilVar))
-  print("Hasil Test", sum(hasilTest)/len(hasilTest))
-  print("Rata-Rata Waktu", sum(waktu)/len(waktu))
+  print("Rata-Rata Hasil Line : ", sum(hasilLine)/len(hasilLine))
+  print("Rata-Rata Hasil Var : ", sum(hasilVar)/len(hasilVar))
+  print("Rata-Rata Waktu : ", sum(waktu)/len(waktu))
   exit

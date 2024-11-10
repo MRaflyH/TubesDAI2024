@@ -11,10 +11,6 @@ def visualizeCube(magicCube):
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111, projection='3d')
 
-    ax._button_press = lambda event: None
-    ax._button_release = lambda event: None
-    ax._button_dragging = lambda event: None
-
     check_ax = plt.axes([0.02, 0.7, 0.1, 0.2])
     plane_ax = plt.axes([0.02, 0.5, 0.1, 0.1])
 
@@ -58,9 +54,7 @@ def visualizeCube(magicCube):
             for y in range(5):
                 for z in range(5):
                     index = x + (y*5) + (z*25)
-                    
                     value = magicCube[index]  
-                    
                     
                     if current_plane == 'XY Plane':
                         layer_num = z + 1
@@ -90,6 +84,7 @@ def visualizeCube(magicCube):
             return x + 1
 
     def update_view():
+        nonlocal current_plane
         plane_selections[current_plane] = list(check.get_status())
         
         selected_layers = [i+1 for i, status in enumerate(check.get_status()) if status]
@@ -132,11 +127,11 @@ def visualizeCube(magicCube):
         
         fig.canvas.draw_idle()
 
-    def update_layer():
+    def update_layer(label):  # Added label parameter
         update_view()
 
     def update_plane(label):
-        global current_plane
+        nonlocal current_plane
         current_plane = label
         
         saved_selections = plane_selections[current_plane]
