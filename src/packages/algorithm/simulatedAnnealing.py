@@ -4,24 +4,40 @@ import copy
 import time
 import matplotlib.pyplot as plt
 import numpy as np
+from ..adt.magicCube import randomNeighbor, buildRandomMagicCube, lineFunction, varFunction
+import numpy as np
 import statistics
 from ..adt.magicCube import randomNeighbor, buildRandomMagicCube, lineFunction, varFunction
 
 def decision(probability):
   return (random.random() < probability)
 
+def simulatedAnnealingAlgorithm(magicCube, T, objFunction, isObjectiveFindingMaximum):
+  operatorDifference =  (lambda x, y : x - y) if isObjectiveFindingMaximum  else (lambda x, y : y - x)
 def coolingFunction(T):
   return T * 0.9999
 
 def simulatedAnnealingAlgorithm(magicCube, T, maxIteration, objFunction, isObjectiveFindingMaximum):
   operatorDifference =  (lambda x, y : x - y) if isObjectiveFindingMaximum  else (lambda x, y : y - x)
 
+  # Plot Configuration
+  plt.title("SA Formula to Iteration Plot")
+  plt.xlabel("Iteration Count")
+  plt.ylabel("Simulated Annealing Formula Value")
   plt.title("SA Formula to Iteration Plot")
   plt.xlabel("Iteration Count")
   plt.ylabel("Simulated Annealing Formula Value")
   SA_formula_array = []
+  iteration_array = [] 
   iteration_array = list(range(1, maxIteration+1))
   iteration = 0
+
+  while (T > 0.01):
+    successorMagicCube = randomNeighbor(magicCube)
+    
+    difference = operatorDifference(objFunction(successorMagicCube),objFunction(magicCube))
+
+    SA_formula = (math.e)**(difference/T)
   difference_array = []
   count_go_to_worse = 0
 
@@ -31,12 +47,17 @@ def simulatedAnnealingAlgorithm(magicCube, T, maxIteration, objFunction, isObjec
     
     difference = operatorDifference(objFunction(successorMagicCube),objFunction(magicCube))
     
+    if (difference > 0 ) :
+      magicCube = copy.deepcopy(successorMagicCube)
+    
+    if(SA_formula > 1):
     if (difference >= 0) :
       magicCube = copy.deepcopy(successorMagicCube)
       SA_formula_array.append(1)
     else:
-      SA_formula = (math.e)**(difference/T)
       SA_formula_array.append(SA_formula)
+
+    iteration_array.append(iteration)
       if(decision(SA_formula)):
         magicCube = copy.deepcopy(successorMagicCube)
         count_go_to_worse += 1
@@ -44,6 +65,11 @@ def simulatedAnnealingAlgorithm(magicCube, T, maxIteration, objFunction, isObjec
       
       
     iteration += 1
+    T *= 0.999 # Minus T in every iteration
+
+  # Display Chart
+  plt.plot(iteration_array, SA_formula_array)
+  plt.show()
     T = coolingFunction(T)
 
   # Display Chart
@@ -54,7 +80,12 @@ def simulatedAnnealingAlgorithm(magicCube, T, maxIteration, objFunction, isObjec
 
   return magicCube, (statistics.median(difference_array))
 
+  return magicCube
+
 if __name__ == "__main__":
+  test = buildRandomMagicCube()
+  print(lineFunction(test))
+  print(lineFunction(simulatedAnnealingAlgorithm(test, 1000000000000000, lineFunction, True)))
   hasilLine = []
   hasilVar = []
   waktu = []
