@@ -4,7 +4,7 @@ import copy
 import time
 import matplotlib.pyplot as plt
 import numpy as np
-from ..adt.magicCube import random_neighbor, buildRandomMagicCube, lineFunction, varFunction
+from ..adt.magicCube import randomNeighbor, buildRandomMagicCube, lineFunction, varFunction
 
 def decision(probability):
   return ((random.random()) < probability)

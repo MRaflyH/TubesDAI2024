@@ -46,6 +46,11 @@ int main() {
     // randomise seed
     srand(time(NULL));
     rand();
+    int array[125] = {91, 17, 43, 93, 72, 3, 86, 98, 97, 30, 47, 39, 53, 76, 101, 60, 118, 52, 29, 57, 115, 56, 69, 19, 55, 18, 8, 83, 90, 116, 10, 123, 114, 7, 61, 111, 36, 42, 104, 23, 70, 32, 9, 109, 94, 105, 117, 67, 5, 22, 107, 49, 124, 28, 6, 100, 44, 13, 34, 122, 92, 33, 26, 102, 63, 12, 112, 106, 51, 35, 4, 77, 46, 99, 88, 89, 24, 50, 71, 81, 62, 48, 11, 120, 74, 27, 31, 119, 85, 54, 41, 125, 25, 38, 84, 96, 87, 110, 1, 21, 78, 113, 2, 103, 20, 68, 64, 45, 80, 58, 15, 66, 95, 16, 121, 73, 59, 65, 40, 79, 82, 14, 108, 75, 37};
+    magiccube myCube = create_magic_cube(array);
+    display_cube(myCube);
+    printf("%f\n",line_objective_function(myCube));
+    printf("%f\n",var_objective_function(myCube));
 
     // magiccube mySolution;
     // mySolution = create_magic_cube(solution);
@@ -61,31 +66,31 @@ int main() {
     // restartCube = restart(objective, 10);
     // display_cube(restartCube);
 
-    magiccube annealingCube;
+    // magiccube annealingCube;
     // annealingCube = simulated_annealing_cost(myCube, objective, geometric_temperature_function, 1000000000);
     // printf("%f\n%f\n", var_objective_function(annealingCube), line_objective_function(annealingCube));
     // display_cube(annealingCube);
 
 
-    t = clock(); 
-    double cost = 0;
-    double line = 0;
-    double time = 0;
+    // t = clock(); 
+    // double cost = 0;
+    // double line = 0;
+    // double time = 0;
     
-    for (int i = 0; i < 100; i++) {
-        t = clock(); 
-        annealingCube = annealing(random_magic_cube(), var_objective_function, geometric_temperature_function, 1000000000);
-        t = clock() - t; 
-        time += ((double)t)/CLOCKS_PER_SEC; 
-        cost += var_objective_function(annealingCube);
-        line += line_objective_function(annealingCube);
-        printf("\r%d", i);
-        fflush(stdout);
-    }
-    printf("\n");
-    printf("avg cost = %f\n", cost/100);
-    printf("avg line = %f\n", line/100);
-    printf("avg time = %f\n", time/100);
+    // for (int i = 0; i < 100; i++) {
+    //     t = clock(); 
+    //     annealingCube = annealing(random_magic_cube(), var_objective_function, geometric_temperature_function, 1000000000);
+    //     t = clock() - t; 
+    //     time += ((double)t)/CLOCKS_PER_SEC; 
+    //     cost += var_objective_function(annealingCube);
+    //     line += line_objective_function(annealingCube);
+    //     printf("\r%d", i);
+    //     fflush(stdout);
+    // }
+    // printf("\n");
+    // printf("avg cost = %f\n", cost/100);
+    // printf("avg line = %f\n", line/100);
+    // printf("avg time = %f\n", time/100);
 
     // t = clock() - t; 
     // double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds 

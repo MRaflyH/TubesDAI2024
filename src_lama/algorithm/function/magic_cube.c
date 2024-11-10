@@ -246,7 +246,7 @@ void cube_swap(magiccube magic_cube, int cube_index_1, int cube_index_2) {
 
 void display_cube(magiccube magic_cube) {
     for (int i = 0; i < 125; i++) {
-        printf("%d ",magic_cube[i]);
+        printf("%d, ",magic_cube[i]);
     }
     printf("\n");
 }

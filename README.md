@@ -1,11 +1,8 @@
 # TubesDAI2024
 
-Untuk run program, jalankan berikut di terminal yang sudah dalam direktori program
-> cd bin
-
-> make
-
-Setelah selesai menggunakan program, jalankan berikut di terminal yang sudah dalam direktori program
-> cd bin
-
-> make clean
+python3 -m src.packages.algorithm.steepestAscent
+python3 -m src.packages.algorithm.sidewaysClimb
+python3 -m src.packages.algorithm.randomHillClimb
+python3 -m src.packages.algorithm.stochasticHillClimb
+python3 -m src.packages.algorithm.simulatedAnnealing
+python3 -m src.packages.algorithm.geneticAlgorithm

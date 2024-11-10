@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -g
 BIN_DIR = ../bin
-SRC_DIR = ../src
+SRC_DIR = ../src_lama
 ALG_DIR = $(SRC_DIR)/algorithm
 FUN_DIR = $(ALG_DIR)/function
 
