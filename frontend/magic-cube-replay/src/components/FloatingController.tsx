@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import styled from "styled-components";
 import { Button, Select, Slider, Modal, Table, Typography } from "antd";
 import { PlayIcon, PauseIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
+import axios from "axios";
 
 const { Text } = Typography;
 
@@ -41,6 +42,7 @@ interface FloatingControllerProps {
   gap: number;
   handleGapChange: (value: number) => void;
   initialGap: number;
+  setReplayData: (data: number[][]) => void;
 }
 
 const FloatingController: React.FC<FloatingControllerProps> = ({
@@ -61,7 +63,6 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
   const [selectedAlgorithm, setSelectedAlgorithm] = useState(
     "Steepest Ascent Hill-Climbing"
   );
-  const [dragEnabled, setDragEnabled] = useState(false);
 
   useEffect(() => {
     setSelectedIteration(currentIndex);
@@ -72,27 +73,37 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
     handleGapChange(normalizedGap);
   };
 
+  // Inside FloatingController component:
+  const onAlgorithmChange = async (algorithm: string) => {
+    setSelectedAlgorithm(algorithm);
+    try {
+      const response = await axios.post("http://127.0.0.1:8001/run-algorithm", {
+        initial_cube: Array(125).fill(1),
+        objective_function: "var",
+        value_objective: 0,
+        max_iterations: 100,
+        algorithm,
+      });
+      setReplayData(response.data.replay_data || []);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
   return (
     <GlassContainer
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      drag={dragEnabled}
+      drag
       dragConstraints={{
         left: 0,
         right: 0,
         top: 0,
         bottom: 0,
       }}
-      dragElastic={0.4}
+      dragElastic={0.05} // Reduced drag elasticity
       dragSnapToOrigin={true}
-      onPointerDown={(e) => {
-        // Enable drag only when the pointer is on the container background
-        if (e.target === e.currentTarget) {
-          setDragEnabled(true);
-        }
-      }}
-      onPointerUp={() => setDragEnabled(false)}
     >
       <Text className="mb-2 text-white text-left w-full">
         Select Algorithm:
@@ -100,7 +111,7 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
       <ControlRow>
         <Select
           value={selectedAlgorithm}
-          onChange={setSelectedAlgorithm}
+          onChange={onAlgorithmChange}
           className="w-[80%]"
         >
           <Select.Option value="Steepest Ascent Hill-Climbing">

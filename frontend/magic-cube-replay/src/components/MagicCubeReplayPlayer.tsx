@@ -3,6 +3,8 @@ import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls, Text } from "@react-three/drei";
 import FloatingController from "./FloatingController";
 import * as THREE from "three";
+import axios from 'axios';
+
 
 const MagicCubeReplayPlayer = () => {
   const [replayData, setReplayData] = useState<number[][]>([]);
