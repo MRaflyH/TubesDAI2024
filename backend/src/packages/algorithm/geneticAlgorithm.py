@@ -6,6 +6,28 @@ import time
 from ..adt.population import Population
 from ..adt.magicCube import buildRandomMagicCube, functionDict, fitnessDict, functionValueDict, findNumber, swapMagicCube, randomNeighbor
 
+def crossover(parent1, parent2):
+    child1 = copy.deepcopy(parent1)
+    child2 = copy.deepcopy(parent2)
+
+    split = math.floor(random.normalvariate(125 / 2, 125 / 8))
+    while split < 0 or split >= 125:
+        split = math.floor(random.normalvariate(125 / 2, 125 / 8))
+
+    for i in range(split):
+        childIndex1 = findNumber(child1, parent2[i])
+        childIndex2 = findNumber(child2, parent1[i])
+        swapMagicCube(child1, childIndex1, i)
+        swapMagicCube(child2, childIndex2, i)
+
+    return child1, child2
+
+def mutation(magicCube):
+    mutant = copy.deepcopy(magicCube)
+    for _ in range(20):
+        mutant = randomNeighbor(mutant)
+    return mutant
+
 def geneticAlgorithm(initialPopulation, maxIteration, objectiveFunction, fitnessFunction, isValue, replay_data=None):
     """
     Run the Genetic Algorithm to find the best solution.
@@ -72,3 +94,38 @@ def geneticAlgorithm(initialPopulation, maxIteration, objectiveFunction, fitness
     except Exception as e:
         print(f"Error in geneticAlgorithm: {e}")
         raise e
+
+if __name__ == "__main__":
+    function = "var"  # or "line" depending on the objective
+    objective = functionDict[function]
+    fitness = fitnessDict[function]
+    value = functionValueDict[function]
+    isValue = value
+
+    initialPopulationCount = 4
+    maxIteration = 13
+
+    initialPopulation = Population()
+    for _ in range(initialPopulationCount):
+        initialPopulation.append(buildRandomMagicCube(), objective, fitness, isValue)
+
+    result = geneticAlgorithm(initialPopulation, maxIteration, objective, fitness, isValue)
+
+    print("\nInitial Population:")
+    result["initial_population"].display()
+    print("\nFinal Population:")
+    result["final_population"].display()
+    print("\nBest Magic Cube:")
+    print(result["best_magic_cube"])
+    print("\nBest Value:")
+    print(result["best_value"])
+    print("\nBest Value History:")
+    print(result["best_value_history"])
+    print("\nAverage Value History:")
+    print(result["average_value_history"])
+    print("\nPopulation Count:")
+    print(result["population_count"])
+    print("\nIterations:")
+    print(result["iterations"])
+    print("\nRuntime:")
+    print(f"{result['runtime']:.2f} seconds")

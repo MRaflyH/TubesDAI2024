@@ -66,6 +66,12 @@ async def run_algorithm(request: AlgorithmRequest):
         if objective_function is None:
             raise HTTPException(status_code=400, detail="Invalid objective function selected")
 
+        # Initialize replay_data
+        replay_data = []
+
+        # Log parameters sebelum memanggil algoritma
+        logger.info(f"Parameters for {request.algorithm}: value_objective={request.value_objective}, is_value={request.is_value}, max_iterations={request.max_iterations}")
+
         # Handle algorithm based on selected type
         if request.algorithm == "sideways_hill_climbing":
             if request.value_objective is None:
@@ -75,7 +81,7 @@ async def run_algorithm(request: AlgorithmRequest):
                 objective_function=objective_function,
                 value_objective=request.value_objective,  # Pass 'value_objective'
                 max_sideways_moves=20,
-                replay_data=[]
+                replay_data=replay_data  # Pass 'replay_data'
             )
         elif request.algorithm == "random_restart":
             # 'random_restart_hill_climbing' does NOT expect 'value_objective', so do not pass it
