@@ -94,7 +94,7 @@ elif algoritma == "sa":
     test = buildRandomMagicCube()
     initial_cube, final_cube, currentValue, objective_values, runtime, iterations, SA_formula_array = simulatedAnnealingAlgorithm(test, 1000000000, objective, value)
     printMagicCube(final_cube)
-    print(objectiveFunction(final_cube))
+    print(currentValue)
     plotting(SA_formula_array)
     print(runtime)
     
@@ -109,12 +109,12 @@ elif algoritma == "steepest":
     visualizeCube(final_cube)
 
 elif algoritma == "stochastic":
-    print("Max iterations (recommended 100000):")
+    print("Max iterations (recommended 100 000):")
     max_iterations = int(input())
     print()
 
     initial_cube = buildRandomMagicCube()
-    initial_cube, final_cube, final_value, objective_values, runtime, iterations = stochastic_hill_climbing(initial_cube, max_iterations, objective_function, value_objective)
+    initial_cube, final_cube, final_value, objective_values, runtime, iterations = stochastic_hill_climbing(initial_cube, max_iterations, objective, value)
 
     print(f"Final Objective Value: {final_value}")
     print("Runtime:", runtime, "sec")
