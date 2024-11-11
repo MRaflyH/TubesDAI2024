@@ -4,6 +4,7 @@ import copy
 import time
 from ..adt.population import *
 import matplotlib.pyplot as plt
+from ..Visualization.visualize import visualizeCube
 
 def geneticAlgorithm(initialPopulation, maxIteration, objectiveFunction, fitnessFunction, isValue):
     start = time.time()
@@ -47,7 +48,7 @@ def geneticAlgorithm(initialPopulation, maxIteration, objectiveFunction, fitness
         population.merge(childrenPopulation, isValue)
         averageValueHistory.append(population.totalValue/population.count)
         bestValueHistory.append(population.bestState.value)
-        print(iteration, time.time()-start)
+        # print(iteration, time.time()-start)
         if(population.bestState.value == isValue): break
         iteration += 1
     
@@ -82,13 +83,26 @@ if __name__ == "__main__":
     fitness = fitnessDict[function]
     value = functionValueDict[function]
 
-    initialPopulationCount = 4
-    maxIteration = 13
+    initialPopulationCount = 24
+    maxIteration = 12
 
     initialPopulation = Population()
 
     for i in range(initialPopulationCount):
-        initialPopulation.append(buildRandomMagicCube(), objective, fitness, value)
+        intermediaryCube = buildRandomMagicCube()
+        initialPopulation.append(intermediaryCube, objective, fitness, value)
+
+    dataInitial = []
+    current = initialPopulation.head
+
+    bestInitialIndividual = current
+
+    current = current.next
+
+    while current:
+        if(current.value < bestInitialIndividual.value):
+            bestInitialIndividual = current
+        current = current.next
 
     parentValue, initialPopulation, population, bestState, bestValue, bestValueHistory, averageValueHistory, populationCount, iteration, runtime = geneticAlgorithm(initialPopulation, maxIteration, objective, fitness, value)
     # print("\npopulation")
@@ -118,19 +132,19 @@ if __name__ == "__main__":
         data.append(current.value)
         current = current.next
 
-    plt.figure(figsize=(10, 6))
-    plt.hist(parentValue, bins=50, color='skyblue', edgecolor='black', alpha=0.7, label='Dataset 1')
-    plt.hist(data, bins=50, color='salmon', edgecolor='black', alpha=0.5, label='Dataset 2')
-    plt.xlabel('Value')
-    plt.ylabel('Frequency')
-    plt.title('Overlayed Histogram of Two Datasets')
-    plt.show()
-
-    # parent1 = buildRandomMagicCube()
-    # parent2 = buildRandomMagicCube()
-    # child1, child2 = crossover(parent1, parent2)
 
     # print(parent1)
     # print(parent2)
     # print(child1)
     # print(child2)
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(len(averageValueHistory)), averageValueHistory,marker='o', linestyle='-', color = "grey")
+    plt.plot(range(len(bestValueHistory)), bestValueHistory,marker='o', linestyle='-', color = "red")    # plt.hist(data, bins=50, color='salmon', edgecolor='black', alpha=0.5, label='Dataset 2')
+    plt.xlabel('Iteration')
+    plt.ylabel('Value')
+    plt.title('Average Value to Iteration Plot')
+    plt.show()
+
+    visualizeCube(bestInitialIndividual.magicCube)
+    visualizeCube(bestState)
