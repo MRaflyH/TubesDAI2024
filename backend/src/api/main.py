@@ -4,7 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import sys
 import os
-from fastapi.responses import FileResponse
+from fastapi.responses import JSONResponse
+from typing import List, Dict
 
 # Add the src path to sys.path to import modules
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
@@ -29,7 +30,7 @@ logger = logging.getLogger(__name__)
 # Configure CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development; specify in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -37,7 +38,7 @@ app.add_middleware(
 
 # Model for request body receiving parameters from frontend
 class AlgorithmRequest(BaseModel):
-    initial_cube: list
+    initial_cube: List[int]
     objective_function: str
     value_objective: float
     max_iterations: int
@@ -47,40 +48,34 @@ class AlgorithmRequest(BaseModel):
 async def read_root():
     return {"message": "Welcome to the Algorithm API! Use the POST method to interact with the algorithms."}
 
-@app.get("/favicon.ico")
-async def favicon():
-    return FileResponse(os.path.join(os.path.dirname(__file__), "static", "favicon.ico"))  # Update path if necessary
-
 # Validation function for the initial cube
-def is_valid_magic_cube(cube):
-    return sorted(cube) == list(range(1, 126))
+def is_valid_magic_cube(cube: List[int]) -> bool:
+    return len(cube) == 125 and all(isinstance(i, int) for i in cube)
 
 @app.post("/run-algorithm/")
 async def run_algorithm(request: AlgorithmRequest):
     logger.info("Received request at /run-algorithm/")
     try:
-        # Validate and select objective function
         if not is_valid_magic_cube(request.initial_cube):
             raise HTTPException(status_code=400, detail="Invalid initial cube provided")
-        logger.info(f"Initial cube: {request.initial_cube}")
 
+        # Select objective function
         objective_function = functionDict.get(request.objective_function)
         if objective_function is None:
             raise HTTPException(status_code=400, detail="Invalid objective function selected")
-        logger.info(f"Objective function selected: {request.objective_function}")
 
-        value_objective = request.value_objective
-        result = None
+        # Choose algorithm and generate replay data
+        replay_data = []
         logger.info(f"Starting algorithm: {request.algorithm}")
 
-        # Execute algorithm based on selection
         if request.algorithm == "random_restart":
             result = random_restart_hill_climbing(
                 initial_cube=request.initial_cube,
                 objective_function=objective_function,
-                value_objective=value_objective,
+                value_objective=request.value_objective,
                 max_restarts=3,
-                max_iterations_per_restart=request.max_iterations
+                max_iterations_per_restart=request.max_iterations,
+                replay_data=replay_data
             )
         elif request.algorithm == "genetic_algorithm":
             result = geneticAlgorithm(
@@ -88,54 +83,54 @@ async def run_algorithm(request: AlgorithmRequest):
                 max_iteration=request.max_iterations,
                 objective_function=objective_function,
                 fitness_function=functionDict["line"],
-                is_value=True
+                is_value=True,
+                replay_data=replay_data
             )
-            logger.info("Genetic algorithm computation completed")
         elif request.algorithm == "steepest_ascent":
             result = steepest_ascent_hill_climbing(
                 initial_cube=request.initial_cube,
                 objective_function=objective_function,
-                is_value=True
+                is_value=True,
+                replay_data=replay_data
             )
         elif request.algorithm == "simulated_annealing":
             result = simulatedAnnealingAlgorithm(
                 initial_cube=request.initial_cube,
                 T=1000000000,
                 objective_function=objective_function,
-                value_objective=value_objective
+                value_objective=request.value_objective,
+                replay_data=replay_data
             )
         elif request.algorithm == "sideways_hill_climbing":
             result = hill_climbing_with_sideways(
                 initial_cube=request.initial_cube,
                 objective_function=objective_function,
                 is_value=True,
-                max_sideways_moves=20
+                max_sideways_moves=20,
+                replay_data=replay_data
             )
         elif request.algorithm == "stochastic_hill_climbing":
             result = stochastic_hill_climbing(
                 initial_cube=request.initial_cube,
                 max_iterations=request.max_iterations,
                 objective_function=objective_function,
-                value_objective=value_objective
+                value_objective=request.value_objective,
+                replay_data=replay_data
             )
         else:
             raise HTTPException(status_code=400, detail="Invalid algorithm selected")
-        
-        logger.info(f"Algorithm {request.algorithm} computation completed")
 
-        # Ensure replay_data is included in the response
+        # Prepare response with all the data
         response_data = {
             "initial_cube": request.initial_cube,
-            "final_cube": result.get("final_cube"),
-            "final_value": result.get("final_value"),
-            "objective_values": result.get("objective_values") or result.get("value_array") or result.get("objective_value_iterations"),
+            "final_cube": result["final_cube"],
+            "final_value": result["final_value"],
             "runtime": result.get("runtime"),
             "iterations": result.get("iterations"),
-            "replay_data": result.get("cube_states") or result.get("replay_data") or [request.initial_cube]  # Ensure replay_data is included
+            "replay_data": replay_data  # Replay data for all iterations
         }
-        
-        logger.info(f"Response data: {response_data}")
-        return response_data
+
+        return JSONResponse(content=response_data)
 
     except Exception as e:
         logger.error(f"Error in run_algorithm: {e}")

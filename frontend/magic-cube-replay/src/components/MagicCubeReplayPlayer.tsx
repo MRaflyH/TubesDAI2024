@@ -109,7 +109,7 @@ const MagicCubeReplayPlayer = () => {
   };
 
   return (
-    <div className="relative w-full min-h-screen bg-gray-900 overflow-hidden">
+    <div className="relative w-full min-h-screen bg-slate-600 overflow-hidden">
       <div className="flex justify-center items-center w-full h-screen overflow-hidden">
         <Canvas
           className="h-full w-full"
