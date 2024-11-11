@@ -107,6 +107,12 @@ def varFunction(magicCube):
 
     return var / 109
 
+def varFitness(magicCube):
+    return 1/((varFunction(magicCube)+1)**8)
+
+def lineFitness(magicCube):
+    return (lineFunction(magicCube)+1)*2
+
 functionDict = {
     "line" : lineFunction,
     "var" : varFunction
@@ -115,6 +121,11 @@ functionDict = {
 functionValueDict = {
     "line" : 109,
     "var" : 0
+}
+
+fitnessDict = {
+    "line" : lineFitness,
+    "var" : varFitness
 }
 # Neighbors
 

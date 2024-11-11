@@ -3,36 +3,56 @@ import random
 import copy
 import time
 from ..adt.population import *
+import matplotlib.pyplot as plt
 
-def geneticAlgorithm(initialPopulationCount, maxIteration, objectiveFunction, fitnessFunction, isValue):
+def geneticAlgorithm(initialPopulation, maxIteration, objectiveFunction, fitnessFunction, isValue):
     start = time.time()
-    valueHistory = [[0,0] for i in range(maxIteration+1)]
-    population = Population()
-    for i in range(initialPopulationCount):
-        population.append(buildRandomMagicCube(), fitnessFunction, isValue)
+    averageValueHistory = []
+    bestValueHistory = []
+    population = initialPopulation.deepcopy(objectiveFunction, fitnessFunction, isValue)
         
-    valueHistory[0][0] = population.totalValue/population.count
-    valueHistory[0][1] = population.bestState.value
+    averageValueHistory.append(population.totalValue/population.count)
+    bestValueHistory.append(population.bestState.value)
 
-    for i in range(maxIteration):
+    parentValue = []
+    iteration = 0
+
+    while iteration < maxIteration:
         childrenPopulation = Population()
         for j in range(population.count//2):
             parent1 = population.weightedSearch(random.random()).magicCube
             parent2 = population.weightedSearch(random.random()).magicCube
+
+            while np.array_equal(parent1, parent2):
+                parent2 = population.weightedSearch(random.random()).magicCube
+
+            # parent1 = population.weightedSearch(random.random())
+            # parent2 = population.weightedSearch(random.random())
+            if iteration == 12:
+                parentValue.append(objectiveFunction(parent1))
+                parentValue.append(objectiveFunction(parent2))
+            # parent1 = parent1.magicCube
+            # parent2 = parent2.magicCube
+
             child1, child2 = crossover(parent1, parent2)
-            if (random.random() < 0.1): child1 = mutation(child1)
-            if (random.random() < 0.1): child2 = mutation(child2)
-            childrenPopulation.append(child1, fitnessFunction, isValue)
-            childrenPopulation.append(child2, fitnessFunction, isValue)
-        population.merge(childrenPopulation, True)
+            if (random.random() < 0.5): child1 = mutation(child1)
+            if (random.random() < 0.5): child2 = mutation(child2)
 
-        valueHistory[i+1][0] = population.totalValue/population.count
-        valueHistory[i+1][1] = population.bestState.value
+            # checkChild1, checkChild2 = population.checkChildren(child1, child2)
+            # if not checkChild1: childrenPopulation.append(child1, objectiveFunction, fitnessFunction, isValue)
+            # if not checkChild2: childrenPopulation.append(child2, objectiveFunction, fitnessFunction, isValue)
 
-        print(i, time.time()-start)
+            childrenPopulation.append(child1, objectiveFunction, fitnessFunction, isValue)
+            childrenPopulation.append(child2, objectiveFunction, fitnessFunction, isValue)
+        population.merge(childrenPopulation, isValue)
+        averageValueHistory.append(population.totalValue/population.count)
+        bestValueHistory.append(population.bestState.value)
+        print(iteration, time.time()-start)
+        if(population.bestState.value == isValue): break
+        iteration += 1
     
-    end = time.time()
-    return [population, valueHistory, end-start]
+    runtime = time.time() - start
+    return parentValue, initialPopulation, population, population.bestState.magicCube, population.bestState.value, bestValueHistory, averageValueHistory, population.count, iteration, runtime
 
 def crossover(magicCube1, magicCube2):
     child1 = copy.deepcopy(magicCube1)
@@ -42,29 +62,75 @@ def crossover(magicCube1, magicCube2):
     while split < 0 or split >= 125:
         split = math.floor(random.normalvariate(125/2, 125/8))
 
-    chromosome = random.sample(range(1,126), split)
-
     for i in range(split):
-        parentIndex1 = findNumber(magicCube1, chromosome[i])
-        parentIndex2 = findNumber(magicCube2, chromosome[i])
-        childIndex1 = findNumber(child1, chromosome[i])
-        childIndex2 = findNumber(child2, chromosome[i])
-        swapMagicCube(child1, childIndex1, parentIndex2)
-        swapMagicCube(child2, childIndex2, parentIndex1)
+        childIndex1 = findNumber(child1, magicCube2[i])
+        childIndex2 = findNumber(child2, magicCube1[i])
+        swapMagicCube(child1, childIndex1, i)
+        swapMagicCube(child2, childIndex2, i)
 
     return child1, child2
 
 def mutation(magicCube):
-    return randomNeighbor(magicCube)
-
-def varFitness(magicCube):
-    return 1/varFunction(magicCube)
-
-def lineFitness(magicCube):
-    return lineFunction(magicCube)+1
+    mutant = copy.deepcopy(magicCube)
+    for i in range(20):
+        mutant = randomNeighbor(mutant)
+    return mutant
 
 if __name__ == "__main__":
-    population, history, runtime = geneticAlgorithm(4, 12, lineFunction, lineFitness, True)
+    function = "var"
+    objective = functionDict[function]
+    fitness = fitnessDict[function]
+    value = functionValueDict[function]
+
+    initialPopulationCount = 4
+    maxIteration = 13
+
+    initialPopulation = Population()
+
+    for i in range(initialPopulationCount):
+        initialPopulation.append(buildRandomMagicCube(), objective, fitness, value)
+
+    parentValue, initialPopulation, population, bestState, bestValue, bestValueHistory, averageValueHistory, populationCount, iteration, runtime = geneticAlgorithm(initialPopulation, maxIteration, objective, fitness, value)
+    # print("\npopulation")
     # population.display()
-    print(history)
+    print("\ninitialPopulation")
+    initialPopulation.display()
+    print("\nbestState")
+    print(bestState)
+    print("\nbestValue")
+    print(bestValue)
+    print("\nbestValueHistory")
+    print(bestValueHistory)
+    print("\naverageValueHistory")
+    print(averageValueHistory)
+    print("\npopulationCount")
+    print(populationCount)
+    print("\niteration")
+    print(iteration)
+    print("\nruntime")
     print(runtime)
+
+    # print(population.countDuplicate())
+
+    data = []
+    current = population.head
+    while current:
+        data.append(current.value)
+        current = current.next
+
+    plt.figure(figsize=(10, 6))
+    plt.hist(parentValue, bins=50, color='skyblue', edgecolor='black', alpha=0.7, label='Dataset 1')
+    plt.hist(data, bins=50, color='salmon', edgecolor='black', alpha=0.5, label='Dataset 2')
+    plt.xlabel('Value')
+    plt.ylabel('Frequency')
+    plt.title('Overlayed Histogram of Two Datasets')
+    plt.show()
+
+    # parent1 = buildRandomMagicCube()
+    # parent2 = buildRandomMagicCube()
+    # child1, child2 = crossover(parent1, parent2)
+
+    # print(parent1)
+    # print(parent2)
+    # print(child1)
+    # print(child2)
