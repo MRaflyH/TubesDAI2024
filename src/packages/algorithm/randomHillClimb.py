@@ -29,7 +29,7 @@ def random_restart_hill_climbing(objective_function, value_objective, max_restar
             neighbor_value = objective_function(neighbor_cube)
             total_iterations += 1
             
-            print(f"Restart {restart + 1}, Iteration {iteration + 1}: Current Value = {current_value}, Neighbor Value = {neighbor_value}")
+            # print(f"Restart {restart + 1}, Iteration {iteration + 1}: Current Value = {current_value}, Neighbor Value = {neighbor_value}")
             
             if compare_operator1(neighbor_value, current_value):
                 iterations_per_restart.append(iteration + 1)
