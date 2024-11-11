@@ -1,3 +1,0 @@
-g#!/bin/bash
-
-./main
