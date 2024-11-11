@@ -4,7 +4,15 @@ import random
 import copy
 import time
 from ..adt.population import Population
-from ..adt.magicCube import buildRandomMagicCube, functionDict, fitnessDict, functionValueDict, findNumber, swapMagicCube, randomNeighbor
+from ..adt.magicCube import (
+    buildRandomMagicCube,
+    functionDict,
+    fitnessDict,
+    functionValueDict,
+    findNumber,
+    swapMagicCube,
+    randomNeighbor
+)
 
 def crossover(parent1, parent2):
     child1 = copy.deepcopy(parent1)
@@ -35,7 +43,7 @@ def geneticAlgorithm(initialPopulation, maxIteration, objectiveFunction, fitness
     """
     if replay_data is None:
         replay_data = []
-    
+
     try:
         start = time.time()
         averageValueHistory = []
@@ -95,37 +103,4 @@ def geneticAlgorithm(initialPopulation, maxIteration, objectiveFunction, fitness
         print(f"Error in geneticAlgorithm: {e}")
         raise e
 
-if __name__ == "__main__":
-    function = "var"  # or "line" depending on the objective
-    objective = functionDict[function]
-    fitness = fitnessDict[function]
-    value = functionValueDict[function]
-    isValue = value
-
-    initialPopulationCount = 4
-    maxIteration = 13
-
-    initialPopulation = Population()
-    for _ in range(initialPopulationCount):
-        initialPopulation.append(buildRandomMagicCube(), objective, fitness, isValue)
-
-    result = geneticAlgorithm(initialPopulation, maxIteration, objective, fitness, isValue)
-
-    print("\nInitial Population:")
-    result["initial_population"].display()
-    print("\nFinal Population:")
-    result["final_population"].display()
-    print("\nBest Magic Cube:")
-    print(result["best_magic_cube"])
-    print("\nBest Value:")
-    print(result["best_value"])
-    print("\nBest Value History:")
-    print(result["best_value_history"])
-    print("\nAverage Value History:")
-    print(result["average_value_history"])
-    print("\nPopulation Count:")
-    print(result["population_count"])
-    print("\nIterations:")
-    print(result["iterations"])
-    print("\nRuntime:")
-    print(f"{result['runtime']:.2f} seconds")
+__all__ = ["geneticAlgorithm"]

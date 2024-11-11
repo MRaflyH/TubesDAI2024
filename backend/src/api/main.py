@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from typing import List, Optional
 import sys
 import os
+from src.packages.adt.population import Population 
 
 # Add the src path to sys.path to import modules
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
@@ -84,13 +85,12 @@ async def run_algorithm(request: AlgorithmRequest):
                 replay_data=replay_data  # Pass 'replay_data'
             )
         elif request.algorithm == "random_restart":
-            # 'random_restart_hill_climbing' does NOT expect 'value_objective', so do not pass it
+            # Sesuaikan dengan fungsi random_restart_hill_climbing
             result = random_restart_hill_climbing(
                 initial_cube=request.initial_cube,
                 objective_function=objective_function,
-                max_restarts=3,
-                max_iterations_per_restart=request.max_iterations if request.max_iterations else 100,
-                replay_data=[]
+                max_sideways_moves=20,  # Sesuaikan jika diperlukan
+                replay_data=replay_data  # Pass 'replay_data'
             )
         elif request.algorithm == "steepest_ascent":
             if request.is_value is None:
@@ -99,18 +99,30 @@ async def run_algorithm(request: AlgorithmRequest):
                 initial_cube=request.initial_cube,
                 objective_function=objective_function,
                 is_value=request.is_value,
-                replay_data=[]
+                replay_data=replay_data  # Pass 'replay_data'
             )
         elif request.algorithm == "genetic_algorithm":
             if request.max_iterations is None:
                 raise HTTPException(status_code=400, detail="Missing 'max_iterations' parameter for genetic_algorithm")
+            # Konversi initial_cube menjadi Population
+            initial_population = Population()
+            for cube in request.initial_cube:
+                if not isinstance(cube, list) or len(cube) != 125:
+                    raise HTTPException(status_code=400, detail="Each cube in 'initial_cube' must be a list of 125 integers")
+                initial_population.append(
+                    magicCube=cube,
+                    objectiveFunction=objective_function,
+                    fitnessFunction=functionDict["line"],
+                    isValue=request.is_value if request.is_value else False
+                )
+
             result = geneticAlgorithm(
-                initial_cube=request.initial_cube,
-                max_iteration=request.max_iterations,
-                objective_function=objective_function,
-                fitness_function=functionDict["line"],  # Pastikan 'line' ada di 'functionDict'
-                is_value=request.is_value if request.is_value else False,
-                replay_data=[]
+                initialPopulation=initial_population,
+                maxIteration=request.max_iterations,
+                objectiveFunction=objective_function,
+                fitnessFunction=functionDict["line"],
+                isValue=request.is_value if request.is_value else False,
+                replay_data=replay_data  # Pass 'replay_data'
             )
         elif request.algorithm == "simulated_annealing":
             if request.value_objective is None:
@@ -122,7 +134,7 @@ async def run_algorithm(request: AlgorithmRequest):
                 T=1000000000,
                 objective_function=objective_function,
                 value_objective=request.value_objective,
-                replay_data=[]
+                replay_data=replay_data  # Pass 'replay_data'
             )
         elif request.algorithm == "stochastic_hill_climbing":
             if request.value_objective is None:
@@ -134,7 +146,7 @@ async def run_algorithm(request: AlgorithmRequest):
                 max_iterations=request.max_iterations,
                 objective_function=objective_function,
                 value_objective=request.value_objective,
-                replay_data=[]
+                replay_data=replay_data  # Pass 'replay_data'
             )
         else:
             raise HTTPException(status_code=400, detail="Invalid algorithm selected")
@@ -145,7 +157,7 @@ async def run_algorithm(request: AlgorithmRequest):
             "final_value": result["final_value"],
             "runtime": result.get("runtime"),
             "iterations": result.get("iterations"),
-            "replay_data": result.get("replay_data", [])
+            "replay_data": result.get("replay_data", replay_data)  # Pastikan 'replay_data' disertakan
         }
 
         return JSONResponse(content=response_data)
