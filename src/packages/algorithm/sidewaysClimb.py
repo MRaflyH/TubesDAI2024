@@ -2,6 +2,7 @@ import copy
 import time
 import matplotlib.pyplot as plt
 from ..adt.magicCube import *
+from ..Visualization.visualize import visualizeCube
 
 def hill_climbing_with_sideways(initial_cube, objective_function, is_value, max_sideways_moves=20):
     start = time.time()
@@ -20,14 +21,14 @@ def hill_climbing_with_sideways(initial_cube, objective_function, is_value, max_
         
         iterations += 1
 
-        print(f"Iteration {iterations}: Current Value = {current_value}, Neighbor Value = {neighbor_value}")
+        # print(f"Iteration {iterations}: Current Value = {current_value}, Neighbor Value = {neighbor_value}")
 
         if compare_operator(neighbor_value, current_value):
             current_cube = neighbor_cube
             current_value = neighbor_value
             sideways_moves = 0  
             objective_values.append(neighbor_value)
-            print("  Improved! Moving to better neighbor.")
+            # print("  Improved! Moving to better neighbor.")
         
         elif neighbor_value == current_value:
             if sideways_moves < max_sideways_moves:
@@ -35,7 +36,7 @@ def hill_climbing_with_sideways(initial_cube, objective_function, is_value, max_
                 current_value = neighbor_value
                 sideways_moves += 1
                 objective_values.append(neighbor_value)
-                print(f"  Sideways move #{sideways_moves} taken.")
+                # print(f"  Sideways move #{sideways_moves} taken.")
             else:
                 print("  Reached maximum sideways moves. Terminating search.")
                 break  
@@ -66,11 +67,17 @@ if __name__ == "__main__":
 
     initial_cube, final_cube, final_value, objective_values, runtime, iterations = hill_climbing_with_sideways(initial_cube, objective_function, objective_value)
     
-    print("\nInitial Cube State:")
-    printMagicCube(initial_cube)
-    print("Final Cube State:")
-    printMagicCube(final_cube)
+    # print("\nInitial Cube State:")
+    # printMagicCube(initial_cube)
+    # print("Final Cube State:")
+    # printMagicCube(final_cube)
     print("Final Objective Value:", final_value)
     print("Runtime:", runtime, "sec")
     print("Number of Iterations:", iterations)
     plot_objective_values(objective_values)
+
+    # Visualize inital cube
+    visualizeCube(initial_cube)
+
+    # Visualize final cube
+    visualizeCube(final_cube)

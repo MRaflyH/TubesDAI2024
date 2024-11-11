@@ -3,6 +3,7 @@ import time
 import copy
 import matplotlib.pyplot as plt
 from ..adt.magicCube import *
+from ..Visualization.visualize import visualizeCube
 
 def stochastic_hill_climbing(initial_cube, max_iterations, objective_function, value_objective):
     start = time.time()
@@ -20,7 +21,7 @@ def stochastic_hill_climbing(initial_cube, max_iterations, objective_function, v
         if compare_operator(neighbor_value, current_value):
             current_cube = neighbor_cube
             current_value = neighbor_value
-            print(f"Iteration {iteration + 1}: Improvement found - New Value = {current_value}")
+            # print(f"Iteration {iteration + 1}: Improvement found - New Value = {current_value}")
 
         objective_values.append(current_value)
         iteration += 1
@@ -45,11 +46,17 @@ if __name__ == "__main__":
     initial_cube = buildRandomMagicCube()
     initial_cube, final_cube, final_value, objective_values, runtime, iterations = stochastic_hill_climbing(initial_cube, max_iterations, objective_function, value_objective)
 
-    print("\nInitial Cube State:")
-    printMagicCube(initial_cube)
-    print("Final Best Magic Cube:")
-    printMagicCube(final_cube)
+    # print("\nInitial Cube State:")
+    # printMagicCube(initial_cube)
+    # print("Final Best Magic Cube:")
+    # printMagicCube(final_cube)
     print(f"Final Objective Value: {final_value}")
     print("Runtime:", runtime, "sec")
     print("Number of Iterations:", iterations)
     plot_objective_values(objective_values)
+
+    # Visualize inital cube
+    visualizeCube(initial_cube)
+
+    # Visualize final cube
+    visualizeCube(final_cube)

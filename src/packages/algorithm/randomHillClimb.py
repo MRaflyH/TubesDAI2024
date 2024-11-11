@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import time
 from ..adt.magicCube import *
+from ..Visualization.visualize import visualizeCube
 
 def random_restart_hill_climbing(objective_function, value_objective, max_restarts, max_iterations_per_restart = 500):
     start = time.time()
@@ -28,7 +29,7 @@ def random_restart_hill_climbing(objective_function, value_objective, max_restar
             neighbor_value = objective_function(neighbor_cube)
             total_iterations += 1
             
-            print(f"Restart {restart + 1}, Iteration {iteration + 1}: Current Value = {current_value}, Neighbor Value = {neighbor_value}")
+            # print(f"Restart {restart + 1}, Iteration {iteration + 1}: Current Value = {current_value}, Neighbor Value = {neighbor_value}")
             
             if compare_operator1(neighbor_value, current_value):
                 iterations_per_restart.append(iteration + 1)
@@ -69,13 +70,19 @@ if __name__ == "__main__":
         objective_function, value_objective, max_restarts
     )
 
-    print("\nInitial Cube 1:")
-    printMagicCube(initial_cubes[0])
-    print("Best Cube Found Across All Restarts:")
-    printMagicCube(best_magic_cube)
+    # print("\nInitial Cube 1:")
+    # printMagicCube(initial_cubes[0])
+    # print("Best Cube Found Across All Restarts:")
+    # printMagicCube(best_magic_cube)
     print(f"Final Objective Value (Variance): {best_value}")
     print(f"Runtime: {runtime} sec")
     print(f"Total Iterations Across All Restarts: {total_iterations}")
     print(f"Total Restarts: {restarts}")
     print(f"Restarts per Iteration: {iterations_per_restart}")
     plot_objective_values(best_objective_values)
+    # Visualize inital cube
+    visualizeCube(initial_cubes[0])
+
+    # Visualize final cube
+    visualizeCube(best_magic_cube)
+
