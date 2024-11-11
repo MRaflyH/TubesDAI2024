@@ -29,7 +29,6 @@ const ControlRow = styled.div`
   align-items: center;
 `;
 
-// Define the mapping between display names and algorithm keys
 const algorithms = [
   { label: "Steepest Ascent Hill-Climbing", value: "steepest_ascent" },
   {
@@ -56,8 +55,8 @@ interface FloatingControllerProps {
   initialGap: number;
   setReplayData: (data: number[][]) => void;
   initialCube: number[];
-  selectedAlgorithm: string; // Tambahkan ini
-  setSelectedAlgorithm: (alg: string) => void; // Tambahkan ini
+  selectedAlgorithm: string; 
+  setSelectedAlgorithm: (alg: string) => void;
 }
 
 const FloatingController: React.FC<FloatingControllerProps> = ({
@@ -72,8 +71,8 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
   gap,
   handleGapChange,
   initialGap,
-  selectedAlgorithm, // Tambahkan ini
-  setSelectedAlgorithm, // Tambahkan ini
+  selectedAlgorithm, 
+  setSelectedAlgorithm, 
 }) => {
   const [selectedIteration, setSelectedIteration] = useState(currentIndex);
   const [detailVisible, setDetailVisible] = useState(false);
@@ -88,7 +87,7 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
   };
 
   const onAlgorithmChange = (algorithmKey: string) => {
-    setSelectedAlgorithm(algorithmKey); // Update selected algorithm di parent
+    setSelectedAlgorithm(algorithmKey);
   };
 
   return (
@@ -103,7 +102,7 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
         top: 0,
         bottom: 0,
       }}
-      dragElastic={0.05} // Reduced drag elasticity
+      dragElastic={0.05} 
       dragSnapToOrigin={true}
     >
       <Text className="mb-2 text-white text-left w-full">

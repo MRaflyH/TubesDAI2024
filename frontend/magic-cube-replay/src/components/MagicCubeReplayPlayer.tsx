@@ -5,7 +5,6 @@ import FloatingController from "./FloatingController";
 import * as THREE from "three";
 import axios from "axios";
 
-// Function to create canvas texture with a given number
 const createNumberTexture = (number: number) => {
   const size = 256;
   const canvas = document.createElement("canvas");
@@ -194,7 +193,6 @@ const MagicCubeReplayPlayer = () => {
   );
 };
 
-// Custom Zoom and Pan Control Component
 function ZoomOrbitControls({ gap }: { gap: number }) {
   const { camera, gl } = useThree();
 
