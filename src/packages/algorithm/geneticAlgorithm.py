@@ -15,7 +15,7 @@ def geneticAlgorithm(initialPopulation, maxIteration, objectiveFunction, fitness
     averageValueHistory.append(population.totalValue/population.count)
     bestValueHistory.append(population.bestState.value)
 
-    parentValue = []
+    # parentValue = []
     iteration = 0
 
     while iteration < maxIteration:
@@ -29,9 +29,9 @@ def geneticAlgorithm(initialPopulation, maxIteration, objectiveFunction, fitness
 
             # parent1 = population.weightedSearch(random.random())
             # parent2 = population.weightedSearch(random.random())
-            if iteration == 12:
-                parentValue.append(objectiveFunction(parent1))
-                parentValue.append(objectiveFunction(parent2))
+            # if iteration == 12:
+            #     parentValue.append(objectiveFunction(parent1))
+            #     parentValue.append(objectiveFunction(parent2))
             # parent1 = parent1.magicCube
             # parent2 = parent2.magicCube
 
@@ -53,7 +53,7 @@ def geneticAlgorithm(initialPopulation, maxIteration, objectiveFunction, fitness
         iteration += 1
     
     runtime = time.time() - start
-    return parentValue, initialPopulation, population, population.bestState.magicCube, population.bestState.value, bestValueHistory, averageValueHistory, population.count, iteration, runtime
+    return initialPopulation, population, population.bestState.magicCube, population.bestState.value, bestValueHistory, averageValueHistory, population.count, iteration, runtime
 
 def crossover(magicCube1, magicCube2):
     child1 = copy.deepcopy(magicCube1)
@@ -104,7 +104,7 @@ if __name__ == "__main__":
             bestInitialIndividual = current
         current = current.next
 
-    parentValue, initialPopulation, population, bestState, bestValue, bestValueHistory, averageValueHistory, populationCount, iteration, runtime = geneticAlgorithm(initialPopulation, maxIteration, objective, fitness, value)
+    initialPopulation, population, bestState, bestValue, bestValueHistory, averageValueHistory, populationCount, iteration, runtime = geneticAlgorithm(initialPopulation, maxIteration, objective, fitness, value)
     # print("\npopulation")
     # population.display()
     print("\ninitialPopulation")
