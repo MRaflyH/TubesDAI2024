@@ -5,6 +5,7 @@ import copy
 import matplotlib.pyplot as plt
 import time
 from ..adt.magicCube import *
+from ..Visualization.visualize import visualizeCube
 
 def decision(probability):
     return ((random.random()) < probability)
@@ -22,6 +23,7 @@ def simulatedAnnealingAlgorithm(initialCube, T, objFunction, valueObjective):
   value_array.append(currentValue)
   SA_formula = 0
   totaldiff = []
+  count_stuck = 0
 
   while (T > 0 and currentValue != valueObjective):
     index1, index2 = random.sample(range(125), 2)
@@ -33,6 +35,7 @@ def simulatedAnnealingAlgorithm(initialCube, T, objFunction, valueObjective):
       currentValue = successorValue
       SA_formula_array.append(1)
     else:
+      count_stuck += 1
       SA_formula = (math.e)**(difference/T)
       SA_formula_array.append(SA_formula)
       if decision(SA_formula):
@@ -54,14 +57,20 @@ def simulatedAnnealingAlgorithm(initialCube, T, objFunction, valueObjective):
   
   runtime = time.time() - start
   # plt.hist(totaldiff)
-  return initialCube, magicCube, currentValue, value_array, runtime, iteration, SA_formula_array
-  return initial_cube, final_cube, final_value, objective_value_iterations, runtime, iterations
+  return initialCube, magicCube, currentValue, value_array, runtime, iteration, SA_formula_array, count_stuck
 
-def plotObjectiveValues(SA_formula_array):
+def plotSAFormula(SA_formula_array):
   plt.title("SA Formula to Iteration Plot")
   plt.xlabel("Iteration Count")
   plt.ylabel("Simulated Annealing Formula Value")
   plt.plot(range(len(SA_formula_array)), SA_formula_array)
+  plt.show()
+
+def plotObjectiveValues(value_array):
+  plt.title("Simulated Annealing Objective Value to Iteration Plot")
+  plt.xlabel("Iteration Count")
+  plt.ylabel("Objective Function Value")
+  plt.plot(range(len(value_array)), value_array)
   plt.show()
 
 if __name__ == "__main__":
@@ -71,9 +80,13 @@ if __name__ == "__main__":
   objectiveFunction = functionDict[functionName]
   valueObjective = functionValueDict[functionName]
 
-  initialCube, magicCubeSA, currentValue, value_array, runtime, iteration, SA_formula_array = simulatedAnnealingAlgorithm(test, 1000000000, objectiveFunction, valueObjective)
-  printMagicCube(magicCubeSA)
-  print(objectiveFunction(magicCubeSA))
-  plotObjectiveValues(SA_formula_array)
+  initialCube, magicCubeSA, currentValue, value_array, runtime, iteration, SA_formula_array, total_stuck = simulatedAnnealingAlgorithm(test, 1000000000, objectiveFunction, valueObjective)
+  
+  print("Final Objective Function :", objectiveFunction(magicCubeSA))
+  print("Total Stuck in Local Optima : ", total_stuck)
+  plotSAFormula(SA_formula_array)
+  plotObjectiveValues(value_array)
+  visualizeCube(initialCube)
+  visualizeCube(magicCubeSA)
   print(runtime)
   exit
