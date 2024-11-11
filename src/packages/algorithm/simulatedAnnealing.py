@@ -55,7 +55,6 @@ def simulatedAnnealingAlgorithm(initialCube, T, objFunction, valueObjective):
   runtime = time.time() - start
   # plt.hist(totaldiff)
   return initialCube, magicCube, currentValue, value_array, runtime, iteration, SA_formula_array
-  return initial_cube, final_cube, final_value, objective_value_iterations, runtime, iterations
 
 def plotObjectiveValues(SA_formula_array):
   plt.title("SA Formula to Iteration Plot")
