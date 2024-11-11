@@ -1,4 +1,3 @@
-# src/packages/algorithm/geneticAlgorithm.py
 import math
 import random
 import copy
@@ -55,7 +54,6 @@ def geneticAlgorithm(initialPopulation, maxIteration, objectiveFunction, fitness
 
         iteration = 0
 
-        # Tambahkan populasi awal ke replay_data
         replay_data.append(copy.deepcopy(population.magicCubes))
 
         while iteration < maxIteration:
@@ -79,7 +77,7 @@ def geneticAlgorithm(initialPopulation, maxIteration, objectiveFunction, fitness
             population.merge(childrenPopulation, isValue)
             averageValueHistory.append(population.totalValue / population.count)
             bestValueHistory.append(population.bestState.value)
-            replay_data.append(copy.deepcopy(population.magicCubes))  # Tambahkan populasi saat ini ke replay_data
+            replay_data.append(copy.deepcopy(population.magicCubes))  
 
             print(f"Iteration {iteration}, Time Elapsed: {time.time() - start:.2f}s")
             if population.bestState.value == functionValueDict[objectiveFunction.__name__]:

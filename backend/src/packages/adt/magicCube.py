@@ -3,7 +3,6 @@ import copy
 
 MAGIC_CONST = 315
 
-# Magic cube builder, printer, selector
 
 def buildRandomMagicCube():
     magicCube = [x for x in range(1, 126)]
@@ -30,12 +29,10 @@ def findNumber(magicCube, n):
         if magicCube[i] == n:
             return i
 
-# Objective functions
 
 def lineFunction(magicCube):
     point = 0
 
-    # Rows, columns, slices
     for k in range(5):
         for j in range(5):
             line_sum_1 = sum(magicCube[25 * k + 5 * j + i] for i in range(5))
@@ -43,7 +40,6 @@ def lineFunction(magicCube):
             line_sum_3 = sum(magicCube[25 * j + 5 * i + k] for i in range(5))
             point += (line_sum_1 == MAGIC_CONST) + (line_sum_2 == MAGIC_CONST) + (line_sum_3 == MAGIC_CONST)
 
-    # Face diagonals
     for j in range(5):
         line_sum_1 = sum(magicCube[25 * j + 5 * i + i] for i in range(5))
         line_sum_2 = sum(magicCube[25 * j + 5 * (4 - i) + (4 - i)] for i in range(5))
@@ -78,7 +74,6 @@ def varFunction(magicCube):
             var += (line_sum_2 - MAGIC_CONST) ** 2
             var += (line_sum_3 - MAGIC_CONST) ** 2
 
-    # Face diagonals
     for j in range(5):
         line_sum_1 = sum(magicCube[25 * j + 5 * i + i] for i in range(5))
         line_sum_2 = sum(magicCube[25 * j + 5 * (4 - i) + (4 - i)] for i in range(5))
@@ -94,7 +89,6 @@ def varFunction(magicCube):
         var += (line_sum_5 - MAGIC_CONST) ** 2
         var += (line_sum_6 - MAGIC_CONST) ** 2
 
-    # Space diagonals
     line_sum_1 = sum(magicCube[25 * i + 5 * i + i] for i in range(5))
     line_sum_2 = sum(magicCube[25 * i + 5 * i + (4 - i)] for i in range(5))
     line_sum_3 = sum(magicCube[25 * (4 - i) + 5 * i + i] for i in range(5))
@@ -107,7 +101,6 @@ def varFunction(magicCube):
 
     return var / 109
 
-# Fitness functions
 
 def varFitness(magicCube):
     return 1 / ((varFunction(magicCube) + 1) ** 8)
@@ -115,7 +108,6 @@ def varFitness(magicCube):
 def lineFitness(magicCube):
     return (lineFunction(magicCube) + 1) * 2
 
-# Function dictionaries
 
 functionDict = {
     "line": lineFunction,
@@ -132,7 +124,6 @@ fitnessDict = {
     "var": varFitness
 }
 
-# Neighbors
 
 def steepestNeighborMagicCube(magicCube, objectiveFunction, isValue):
     bestCube = copy.deepcopy(magicCube)

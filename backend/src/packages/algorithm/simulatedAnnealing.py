@@ -5,16 +5,9 @@ import time
 from ..adt.magicCube import *
 
 def decision(probability):
-    """
-    Function to decide if a move should be accepted based on the probability.
-    """
     return (random.random() < probability)
 
 def simulatedAnnealingAlgorithm(initial_cube, T, objective_function, value_objective, replay_data):
-    """
-    Run the Simulated Annealing algorithm to find the best solution.
-    Returns the result in a structured format suitable for frontend.
-    """
     try:
         start = time.time()
         magic_cube = copy.deepcopy(initial_cube)
@@ -28,7 +21,6 @@ def simulatedAnnealingAlgorithm(initial_cube, T, objective_function, value_objec
         value_array.append(current_value)
         sa_formula = 0
 
-        # Tambahkan status awal ke replay_data
         replay_data.append(copy.deepcopy(magic_cube))
 
         while T > 0 and current_value != value_objective:
@@ -50,12 +42,11 @@ def simulatedAnnealingAlgorithm(initial_cube, T, objective_function, value_objec
 
             value_array.append(current_value)
             iteration += 1
-            T *= 0.999  # Kurangi suhu setiap iterasi
+            T *= 0.999  
 
             if T <= 1e-38:
-                T = 0  # Akhiri proses jika suhu terlalu rendah
+                T = 0 
 
-            # Tambahkan status saat ini ke replay_data
             replay_data.append(copy.deepcopy(magic_cube))
 
         runtime = time.time() - start
@@ -70,5 +61,4 @@ def simulatedAnnealingAlgorithm(initial_cube, T, objective_function, value_objec
 
     except Exception as e:
         print(f"Error in simulatedAnnealingAlgorithm: {e}")
-        # Tambahkan logging tambahan jika diperlukan
-        raise e  # Reraise the exception untuk propagasi ke API layer atau fungsi pemanggil
+        raise e 

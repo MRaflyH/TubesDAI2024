@@ -6,7 +6,7 @@ import * as THREE from "three";
 import axios from "axios";
 
 // Function to create canvas texture with a given number
-const createNumberTexture = (number) => {
+const createNumberTexture = (number: number) => {
   const size = 256;
   const canvas = document.createElement("canvas");
   canvas.width = size;
@@ -25,9 +25,9 @@ const createNumberTexture = (number) => {
 };
 
 const MagicCubeReplayPlayer = () => {
-  const [initialCube, setInitialCube] = useState(
+  const initialCube = useState(
     Array.from({ length: 125 }, () => Math.floor(Math.random() * 125) + 1)
-  );
+  )[0];
   const [replayData, setReplayData] = useState([initialCube]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -48,7 +48,7 @@ const MagicCubeReplayPlayer = () => {
   }, [selectedAlgorithm, initialCube]);
 
   useEffect(() => {
-    let interval;
+    let interval: ReturnType<typeof setInterval>;
     if (isPlaying && replayData.length > 0) {
       interval = setInterval(() => {
         setCurrentIndex((prevIndex) => {
@@ -64,7 +64,14 @@ const MagicCubeReplayPlayer = () => {
 
   const handlePlayPause = async () => {
     if (!isPlaying && !isRequestSent) {
-      const requestParams = {
+      const requestParams: {
+        initial_cube: number[];
+        objective_function: string;
+        algorithm: string;
+        max_iterations?: number;
+        is_value?: boolean;
+        value_objective?: number;
+      } = {
         initial_cube: initialCube,
         objective_function: "var",
         algorithm: selectedAlgorithm,
@@ -116,10 +123,10 @@ const MagicCubeReplayPlayer = () => {
     setIsPlaying(!isPlaying);
   };
 
-  const handleSpeedChange = (value) => setPlaybackSpeed(value);
-  const handleProgressChange = (value) => setCurrentIndex(value);
+  const handleSpeedChange = (value: number) => setPlaybackSpeed(value);
+  const handleProgressChange = (value: number) => setCurrentIndex(value);
   const handleReset = () => setCurrentIndex(0);
-  const handleGapChange = (value) => setGap(value);
+  const handleGapChange = (value: number) => setGap(value);
 
   return (
     <div className="relative w-full min-h-screen bg-slate-600 overflow-hidden">
@@ -170,6 +177,7 @@ const MagicCubeReplayPlayer = () => {
             replayData={replayData}
             setReplayData={setReplayData}
             playbackSpeed={playbackSpeed}
+            initialCube={initialCube}
             handlePlayPause={handlePlayPause}
             handleProgressChange={handleProgressChange}
             handleSpeedChange={handleSpeedChange}
@@ -187,11 +195,11 @@ const MagicCubeReplayPlayer = () => {
 };
 
 // Custom Zoom and Pan Control Component
-function ZoomOrbitControls({ gap }) {
+function ZoomOrbitControls({ gap }: { gap: number }) {
   const { camera, gl } = useThree();
 
   useEffect(() => {
-    const handleWheel = (event) => {
+    const handleWheel = (event: WheelEvent) => {
       if (gap === 10) {
         const zoomFactor = event.deltaY * 0.002;
         const vector = new THREE.Vector3().set(0, 0, 0.5).unproject(camera);

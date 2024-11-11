@@ -72,7 +72,6 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
   gap,
   handleGapChange,
   initialGap,
-  setReplayData,
   selectedAlgorithm, // Tambahkan ini
   setSelectedAlgorithm, // Tambahkan ini
 }) => {
