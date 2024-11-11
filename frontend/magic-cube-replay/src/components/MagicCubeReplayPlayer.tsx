@@ -33,16 +33,14 @@ const MagicCubeReplayPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [gap, setGap] = useState(0.1);
-  const [isRequestSent, setIsRequestSent] = useState(false); // Flag untuk melacak apakah request sudah dikirim
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState("steepest_ascent"); // Tambahkan state ini
+  const [isRequestSent, setIsRequestSent] = useState(false);
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState("steepest_ascent");
 
-  // Pre-render all textures for numbers 1 to 125
   const textures = useMemo(
     () => Array.from({ length: 125 }, (_, i) => createNumberTexture(i + 1)),
     []
   );
 
-  // Reset isRequestSent ketika algoritma diubah
   useEffect(() => {
     setIsRequestSent(false);
     setReplayData([initialCube]);
@@ -56,31 +54,28 @@ const MagicCubeReplayPlayer = () => {
         setCurrentIndex((prevIndex) => {
           if (prevIndex < replayData.length - 1) return prevIndex + 1;
           clearInterval(interval);
-          setIsPlaying(false); // Menghentikan pemutaran setelah selesai
+          setIsPlaying(false);
           return prevIndex;
         });
-      }, 1000 / playbackSpeed); // Mengatur kecepatan berdasarkan playbackSpeed
+      }, 1000 / playbackSpeed);
     }
     return () => clearInterval(interval);
   }, [isPlaying, playbackSpeed, replayData]);
 
-  // Function to handle play/pause
   const handlePlayPause = async () => {
     if (!isPlaying && !isRequestSent) {
-      // Siapkan parameter permintaan berdasarkan algoritma yang dipilih
       const requestParams = {
         initial_cube: initialCube,
-        objective_function: "var", // Sesuaikan jika perlu
+        objective_function: "var",
         algorithm: selectedAlgorithm,
       };
 
-      // Tambahkan parameter yang hanya diperlukan untuk algoritma tertentu
       switch (selectedAlgorithm) {
         case "random_restart":
-          requestParams.max_iterations = 100; // Pastikan 'max_iterations' disertakan
+          requestParams.max_iterations = 100;
           break;
         case "steepest_ascent":
-          requestParams.is_value = true; // Kirimkan 'is_value' untuk steepest_ascent
+          requestParams.is_value = true;
           break;
         case "stochastic_hill_climbing":
           requestParams.value_objective = 0;
@@ -91,13 +86,12 @@ const MagicCubeReplayPlayer = () => {
           requestParams.max_iterations = 100;
           break;
         case "genetic_algorithm":
-          requestParams.max_iterations = 100; // Sesuaikan jika diperlukan
-          requestParams.is_value = false; // Atau sesuai kebutuhan
+          requestParams.max_iterations = 100;
+          requestParams.is_value = false;
           break;
         case "sideways_hill_climbing":
-          requestParams.value_objective = 0; // Kirimkan 'value_objective' untuk sideways_hill_climbing
+          requestParams.value_objective = 0;
           break;
-        // Tambahkan case lain sesuai kebutuhan
         default:
           break;
       }
@@ -111,7 +105,7 @@ const MagicCubeReplayPlayer = () => {
 
         if (response.data.replay_data) {
           setReplayData(response.data.replay_data);
-          setIsRequestSent(true); // Tandai bahwa request sudah dikirim
+          setIsRequestSent(true);
         } else {
           console.warn("Replay data not found in response:", response.data);
         }
@@ -119,8 +113,6 @@ const MagicCubeReplayPlayer = () => {
         console.error("Error fetching initial replay data:", error);
       }
     }
-
-    // Toggle status play/pause tanpa mengirim request backend saat Pause
     setIsPlaying(!isPlaying);
   };
 
@@ -149,7 +141,17 @@ const MagicCubeReplayPlayer = () => {
                 const z = Math.floor(index / 25) * (1 + gap) - 2 * (1 + gap);
 
                 return (
-                  <mesh key={index} position={[x, y, z]}>
+                  <mesh
+                    key={index}
+                    position={[x, y, z]}
+                    onPointerOver={(e) => {
+                      e.stopPropagation();
+                      document.body.style.cursor = "grab";
+                    }}
+                    onPointerOut={() => {
+                      document.body.style.cursor = "default";
+                    }}
+                  >
                     <boxGeometry args={[0.9, 0.9, 0.9]} />
                     <meshStandardMaterial map={textures[value - 1]} />
                   </mesh>
@@ -175,8 +177,8 @@ const MagicCubeReplayPlayer = () => {
             gap={gap}
             handleGapChange={handleGapChange}
             initialGap={0.1}
-            selectedAlgorithm={selectedAlgorithm} // Pass the selectedAlgorithm
-            setSelectedAlgorithm={setSelectedAlgorithm} // Pass the setter
+            selectedAlgorithm={selectedAlgorithm}
+            setSelectedAlgorithm={setSelectedAlgorithm}
           />
         </div>
       )}
@@ -198,12 +200,24 @@ function ZoomOrbitControls({ gap }) {
         camera.updateProjectionMatrix();
       }
     };
+
     gl.domElement.addEventListener("wheel", handleWheel);
     return () => gl.domElement.removeEventListener("wheel", handleWheel);
   }, [camera, gl, gap]);
 
   return (
-    <OrbitControls target={[0, 0, 0]} enableZoom enablePan maxDistance={50} />
+    <OrbitControls
+      target={[0, 0, 0]}
+      enableZoom
+      enablePan
+      maxDistance={50}
+      enableRotate
+      mouseButtons={{
+        LEFT: THREE.MOUSE.ROTATE,
+        MIDDLE: THREE.MOUSE.PAN,
+        RIGHT: THREE.MOUSE.DOLLY,
+      }}
+    />
   );
 }
 
