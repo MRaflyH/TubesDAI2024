@@ -6,7 +6,7 @@ import * as THREE from "three";
 import axios from "axios";
 
 // Function to create canvas texture with a given number
-const createNumberTexture = (number) => {
+const createNumberTexture = (number: number) => {
   const size = 256;
   const canvas = document.createElement("canvas");
   canvas.width = size;
@@ -50,16 +50,13 @@ const MagicCubeReplayPlayer = () => {
         );
         setReplayData(generatedData);
 
-        const response = await axios.post(
-          "http://127.0.0.1:8001/run-algorithm",
-          {
-            initial_cube: Array(125).fill(1),
-            objective_function: "var",
-            value_objective: 0,
-            max_iterations: 100,
-            algorithm: "steepest_ascent",
-          }
-        );
+        const response = await axios.post("http://127.0.0.1:8001/run-algorithm/", {
+          initial_cube: Array(125).fill(1),
+          objective_function: "var",
+          value_objective: 0,
+          max_iterations: 100,
+          algorithm: "steepest_ascent",
+        });
         setReplayData(response.data.replayData || generatedData);
       } catch (error) {
         console.error("Error fetching initial replay data:", error);
@@ -126,8 +123,7 @@ const MagicCubeReplayPlayer = () => {
             <group>
               {replayData[currentIndex].map((value, index) => {
                 const x = (index % 5) * (1 + gap) - 2 * (1 + gap);
-                const y =
-                  Math.floor((index % 25) / 5) * (1 + gap) - 2 * (1 + gap);
+                const y = Math.floor((index % 25) / 5) * (1 + gap) - 2 * (1 + gap);
                 const z = Math.floor(index / 25) * (1 + gap) - 2 * (1 + gap);
 
                 return (
@@ -160,6 +156,7 @@ const MagicCubeReplayPlayer = () => {
             isPlaying={isPlaying}
             currentIndex={currentIndex}
             replayData={replayData}
+            setReplayData={setReplayData}
             playbackSpeed={playbackSpeed}
             handlePlayPause={handlePlayPause}
             handleProgressChange={handleProgressChange}

@@ -15,27 +15,27 @@ def printMagicCube(magicCube):
         for y in range(5):
             print("[", end="")
             for x in range(5):
-                print(magicCube[x + (y*5) + (z*25)], end="")
-                if(x != 4):
+                print(magicCube[x + (y * 5) + (z * 25)], end="")
+                if x != 4:
                     print(", ", end="")
             print("]")
-        if(y == 4):
-            print("")   
+        if y == 4:
+            print("")
 
 def selectorMagicCube(magicCube, x, y, z):
-    return magicCube[x + (y*5) + (z*25)]
+    return magicCube[x + (y * 5) + (z * 25)]
 
 def findNumber(magicCube, n):
     for i in range(125):
         if magicCube[i] == n:
             return i
-        
+
 # Objective functions
 
 def lineFunction(magicCube):
     point = 0
 
-    # rows, columns, slices
+    # Rows, columns, slices
     for k in range(5):
         for j in range(5):
             line_sum_1 = sum(magicCube[25 * k + 5 * j + i] for i in range(5))
@@ -43,7 +43,7 @@ def lineFunction(magicCube):
             line_sum_3 = sum(magicCube[25 * j + 5 * i + k] for i in range(5))
             point += (line_sum_1 == MAGIC_CONST) + (line_sum_2 == MAGIC_CONST) + (line_sum_3 == MAGIC_CONST)
 
-    # face diagonals
+    # Face diagonals
     for j in range(5):
         line_sum_1 = sum(magicCube[25 * j + 5 * i + i] for i in range(5))
         line_sum_2 = sum(magicCube[25 * j + 5 * (4 - i) + (4 - i)] for i in range(5))
@@ -56,7 +56,7 @@ def lineFunction(magicCube):
                  (line_sum_3 == MAGIC_CONST) + (line_sum_4 == MAGIC_CONST) + \
                  (line_sum_5 == MAGIC_CONST) + (line_sum_6 == MAGIC_CONST)
 
-    # space diagonals
+    # Space diagonals
     line_sum_1 = sum(magicCube[25 * i + 5 * i + i] for i in range(5))
     line_sum_2 = sum(magicCube[25 * i + 5 * i + (4 - i)] for i in range(5))
     line_sum_3 = sum(magicCube[25 * (4 - i) + 5 * i + i] for i in range(5))
@@ -78,7 +78,7 @@ def varFunction(magicCube):
             var += (line_sum_2 - MAGIC_CONST) ** 2
             var += (line_sum_3 - MAGIC_CONST) ** 2
 
-    # face diagonals
+    # Face diagonals
     for j in range(5):
         line_sum_1 = sum(magicCube[25 * j + 5 * i + i] for i in range(5))
         line_sum_2 = sum(magicCube[25 * j + 5 * (4 - i) + (4 - i)] for i in range(5))
@@ -94,7 +94,7 @@ def varFunction(magicCube):
         var += (line_sum_5 - MAGIC_CONST) ** 2
         var += (line_sum_6 - MAGIC_CONST) ** 2
 
-    # space diagonals
+    # Space diagonals
     line_sum_1 = sum(magicCube[25 * i + 5 * i + i] for i in range(5))
     line_sum_2 = sum(magicCube[25 * i + 5 * i + (4 - i)] for i in range(5))
     line_sum_3 = sum(magicCube[25 * (4 - i) + 5 * i + i] for i in range(5))
@@ -107,20 +107,36 @@ def varFunction(magicCube):
 
     return var / 109
 
+# Fitness functions
+
+def varFitness(magicCube):
+    return 1 / ((varFunction(magicCube) + 1) ** 8)
+
+def lineFitness(magicCube):
+    return (lineFunction(magicCube) + 1) * 2
+
+# Function dictionaries
+
 functionDict = {
-    "line" : lineFunction,
-    "var" : varFunction
+    "line": lineFunction,
+    "var": varFunction
 }
 
 functionValueDict = {
-    "line" : 109,
-    "var" : 0
+    "line": 109,
+    "var": 0
 }
+
+fitnessDict = {
+    "line": lineFitness,
+    "var": varFitness
+}
+
 # Neighbors
 
 def steepestNeighborMagicCube(magicCube, objectiveFunction, isValue):
     bestCube = copy.deepcopy(magicCube)
-    swapMagicCube(bestCube, 0, 1) 
+    swapMagicCube(bestCube, 0, 1)
     bestValue = objectiveFunction(bestCube)
 
     compareOperator = (lambda x, y: x >= y) if isValue else (lambda x, y: x <= y)
@@ -136,7 +152,7 @@ def steepestNeighborMagicCube(magicCube, objectiveFunction, isValue):
                 elif random.random() < 0.5:
                     bestValue = tempValue
                     bestCube = copy.deepcopy(magicCube)
-            swapMagicCube(magicCube, i, j) 
+            swapMagicCube(magicCube, i, j)
     return bestCube
 
 def randomNeighbor(magicCube):
@@ -149,8 +165,6 @@ def swapMagicCube(magicCube, i, j):
     magicCube[i], magicCube[j] = magicCube[j], magicCube[i]
 
 if __name__ == "__main__":
-    # test = buildRandomMagicCube()
-    # printMagicCube(test)
-    testCube = (27, 7, 97, 83, 102, 108, 106, 57, 87, 53, 124, 112, 81, 95, 98, 80, 54, 8, 110, 61, 100, 93, 11, 49, 90, 41, 117, 32, 62, 67, 109, 18, 52, 48, 101, 46, 111, 125, 123, 10, 96, 122, 14, 55, 92, 79, 30, 23, 19, 70, 31, 75, 94, 105, 85, 115, 78, 44, 118, 16, 65, 36, 40, 1, 21, 33, 2, 3, 47, 72, 6, 68, 35, 25, 82, 71, 38, 74, 77, 64, 24, 13, 22, 20, 17, 4, 59, 73, 12, 37, 34, 116, 43, 45, 89, 56, 99, 76, 86, 58, 114, 63, 50, 66, 69, 104, 121, 5, 88, 9, 103, 26, 51, 91, 113, 119, 39, 60, 42, 29, 28, 120, 15, 84, 107)
-    print(lineFunction(testCube))
-    print(varFunction(testCube))
+    testCube = buildRandomMagicCube()
+    print("Line Function Value:", lineFunction(testCube))
+    print("Variance Function Value:", varFunction(testCube))

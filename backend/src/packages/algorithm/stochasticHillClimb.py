@@ -8,32 +8,38 @@ def stochastic_hill_climbing(initial_cube, max_iterations, objective_function, v
     Run the Stochastic Hill Climbing algorithm to find the optimal solution.
     This function returns the result in a structured format.
     """
-    start = time.time()
+    try:
+        start = time.time()
 
-    current_cube = copy.deepcopy(initial_cube)
-    current_value = objective_function(current_cube)
-    objective_values = [current_value]  
-    iteration = 0
-    compare_operator = (lambda x, y: x > y) if value_objective else (lambda x, y: x < y)
+        current_cube = copy.deepcopy(initial_cube)
+        current_value = objective_function(current_cube)
+        objective_values = [current_value]  
+        iteration = 0
+        compare_operator = (lambda x, y: x > y) if value_objective else (lambda x, y: x < y)
 
-    while iteration < max_iterations and current_value != value_objective:
-        neighbor_cube = randomNeighbor(current_cube)
-        neighbor_value = objective_function(neighbor_cube)
+        while iteration < max_iterations and current_value != value_objective:
+            neighbor_cube = randomNeighbor(current_cube)
+            neighbor_value = objective_function(neighbor_cube)
 
-        if compare_operator(neighbor_value, current_value):
-            current_cube = neighbor_cube
-            current_value = neighbor_value
+            if compare_operator(neighbor_value, current_value):
+                current_cube = neighbor_cube
+                current_value = neighbor_value
 
-        objective_values.append(current_value)
-        iteration += 1
+            objective_values.append(current_value)
+            iteration += 1
 
-    runtime = time.time() - start
+        runtime = time.time() - start
 
-    return {
-        "initial_cube": initial_cube,
-        "final_cube": current_cube,
-        "final_value": current_value,
-        "objective_value_iterations": objective_values,
-        "runtime": runtime,
-        "iterations": iteration
-    }
+        return {
+            "initial_cube": initial_cube,
+            "final_cube": current_cube,
+            "final_value": current_value,
+            "objective_value_iterations": objective_values,
+            "runtime": runtime,
+            "iterations": iteration
+        }
+    
+    except Exception as e:
+        print(f"Error in stochastic_hill_climbing: {e}")
+        # Additional logging if needed
+        raise e  # Propagate the exception to the calling function or API layer

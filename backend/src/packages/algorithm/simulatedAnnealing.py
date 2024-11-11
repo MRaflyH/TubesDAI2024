@@ -15,50 +15,56 @@ def simulatedAnnealingAlgorithm(initial_cube, T, objective_function, value_objec
     Run the Simulated Annealing algorithm to find the best solution.
     Returns the result in a structured format suitable for frontend.
     """
-    start = time.time()
-    magic_cube = copy.deepcopy(initial_cube)
+    try:
+        start = time.time()
+        magic_cube = copy.deepcopy(initial_cube)
 
-    operator_difference = (lambda x, y: x - y) if value_objective else (lambda x, y: y - x)
+        operator_difference = (lambda x, y: x - y) if value_objective else (lambda x, y: y - x)
 
-    sa_formula_array = []
-    value_array = []
-    iteration = 0
-    current_value = objective_function(magic_cube)
-    value_array.append(current_value)
-    sa_formula = 0
-
-    while T > 0 and current_value != value_objective:
-        index1, index2 = random.sample(range(125), 2)
-        swapMagicCube(magic_cube, index1, index2)
-        successor_value = objective_function(magic_cube)
-        difference = operator_difference(successor_value, current_value)
-        
-        if difference >= 0:
-            current_value = successor_value
-            sa_formula_array.append(1)
-        else:
-            sa_formula = math.exp(difference / T)
-            sa_formula_array.append(sa_formula)
-            if decision(sa_formula):
-                current_value = successor_value
-            else:
-                swapMagicCube(magic_cube, index1, index2)
-
+        sa_formula_array = []
+        value_array = []
+        iteration = 0
+        current_value = objective_function(magic_cube)
         value_array.append(current_value)
-        iteration += 1
-        T *= 0.999  # Reduce temperature in each iteration
+        sa_formula = 0
 
-        if T <= 1e-38:
-            T = 0  # End the process if temperature is too low
-    
-    runtime = time.time() - start
+        while T > 0 and current_value != value_objective:
+            index1, index2 = random.sample(range(125), 2)
+            swapMagicCube(magic_cube, index1, index2)
+            successor_value = objective_function(magic_cube)
+            difference = operator_difference(successor_value, current_value)
+            
+            if difference >= 0:
+                current_value = successor_value
+                sa_formula_array.append(1)
+            else:
+                sa_formula = math.exp(difference / T)
+                sa_formula_array.append(sa_formula)
+                if decision(sa_formula):
+                    current_value = successor_value
+                else:
+                    swapMagicCube(magic_cube, index1, index2)
 
-    return {
-        "initial_cube": initial_cube,
-        "final_cube": magic_cube,
-        "final_value": current_value,
-        "value_array": value_array,
-        "runtime": runtime,
-        "iterations": iteration,
-        "sa_formula_array": sa_formula_array
-    }
+            value_array.append(current_value)
+            iteration += 1
+            T *= 0.999  # Reduce temperature in each iteration
+
+            if T <= 1e-38:
+                T = 0  # End the process if temperature is too low
+
+        runtime = time.time() - start
+
+        return {
+            "initial_cube": initial_cube,
+            "final_cube": magic_cube,
+            "final_value": current_value,
+            "value_array": value_array,
+            "runtime": runtime,
+            "iterations": iteration,
+            "sa_formula_array": sa_formula_array
+        }
+
+    except Exception as e:
+        print(f"Error in simulatedAnnealingAlgorithm: {e}")
+        # Additional logging can be added here if needed
+        raise e  # Reraise the exception to propagate it to the API layer or calling function

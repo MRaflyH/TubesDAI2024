@@ -2,89 +2,112 @@ import math
 import random
 import copy
 import time
-from ..adt.population import *  # Sesuaikan dengan path yang benar
+from ..adt.population import Population
+from ..adt.magicCube import buildRandomMagicCube, functionDict, fitnessDict, functionValueDict, findNumber, swapMagicCube, randomNeighbor
 
-def geneticAlgorithm(initialPopulationCount, maxIteration, objectiveFunction, fitnessFunction, isValue):
-    """
-    This function serves as the entry point for the genetic algorithm to be called via API.
-    It runs the genetic algorithm, returning the population and the value history.
-    """
-    start = time.time()
-    valueHistory = [[0, 0] for _ in range(maxIteration+1)]
-    population = Population()
-
-    # Initial population setup
-    for _ in range(initialPopulationCount):
-        population.append(buildRandomMagicCube(), fitnessFunction, isValue)
-        
-    valueHistory[0][0] = population.totalValue / population.count
-    valueHistory[0][1] = population.bestState.value
-
-    # Evolution steps
-    for i in range(maxIteration):
-        childrenPopulation = Population()
-        for j in range(population.count // 2):
-            parent1 = population.weightedSearch(random.random()).magicCube
-            parent2 = population.weightedSearch(random.random()).magicCube
-            child1, child2 = crossover(parent1, parent2)
-            if random.random() < 0.1: child1 = mutation(child1)
-            if random.random() < 0.1: child2 = mutation(child2)
-            childrenPopulation.append(child1, fitnessFunction, isValue)
-            childrenPopulation.append(child2, fitnessFunction, isValue)
-        
-        population.merge(childrenPopulation, True)
-
-        valueHistory[i+1][0] = population.totalValue / population.count
-        valueHistory[i+1][1] = population.bestState.value
-
-        print(f"Iteration {i}, Time: {time.time() - start:.2f}s")
-    
-    end = time.time()
-    return {
-        "population": population,
-        "valueHistory": valueHistory,
-        "runtime": end - start
-    }
-
-def crossover(magicCube1, magicCube2):
-    """
-    Perform crossover between two magic cubes.
-    """
-    child1 = copy.deepcopy(magicCube1)
-    child2 = copy.deepcopy(magicCube2)
+def crossover(parent1, parent2):
+    child1 = copy.deepcopy(parent1)
+    child2 = copy.deepcopy(parent2)
 
     split = math.floor(random.normalvariate(125 / 2, 125 / 8))
     while split < 0 or split >= 125:
         split = math.floor(random.normalvariate(125 / 2, 125 / 8))
 
-    chromosome = random.sample(range(1, 126), split)
-
     for i in range(split):
-        parentIndex1 = findNumber(magicCube1, chromosome[i])
-        parentIndex2 = findNumber(magicCube2, chromosome[i])
-        childIndex1 = findNumber(child1, chromosome[i])
-        childIndex2 = findNumber(child2, chromosome[i])
-        swapMagicCube(child1, childIndex1, parentIndex2)
-        swapMagicCube(child2, childIndex2, parentIndex1)
+        childIndex1 = findNumber(child1, parent2[i])
+        childIndex2 = findNumber(child2, parent1[i])
+        swapMagicCube(child1, childIndex1, i)
+        swapMagicCube(child2, childIndex2, i)
 
     return child1, child2
 
 def mutation(magicCube):
-    """
-    Perform mutation on a magic cube (swap random numbers).
-    """
-    return randomNeighbor(magicCube)
+    mutant = copy.deepcopy(magicCube)
+    for _ in range(20):
+        mutant = randomNeighbor(mutant)
+    return mutant
 
-def varFitness(magicCube):
-    """
-    Fitness function based on the variance objective function.
-    """
-    return 1 / varFunction(magicCube)
+def geneticAlgorithm(initialPopulation, maxIteration, objectiveFunction, fitnessFunction, isValue):
+    start = time.time()
+    averageValueHistory = []
+    bestValueHistory = []
+    population = initialPopulation.deepcopy(objectiveFunction, fitnessFunction, isValue)
 
-def lineFitness(magicCube):
-    """
-    Fitness function based on the line objective function.
-    """
-    return lineFunction(magicCube) + 1
+    averageValueHistory.append(population.totalValue / population.count)
+    bestValueHistory.append(population.bestState.value)
 
-# Ensure that this function is callable, rather than using `if __name__ == "__main__":`
+    iteration = 0
+
+    while iteration < maxIteration:
+        childrenPopulation = Population()
+        for _ in range(population.count // 2):
+            parent1 = population.weightedSearch(random.random()).magicCube
+            parent2 = population.weightedSearch(random.random()).magicCube
+
+            while parent1 == parent2:
+                parent2 = population.weightedSearch(random.random()).magicCube
+
+            child1, child2 = crossover(parent1, parent2)
+            if random.random() < 0.5:
+                child1 = mutation(child1)
+            if random.random() < 0.5:
+                child2 = mutation(child2)
+
+            childrenPopulation.append(child1, objectiveFunction, fitnessFunction, isValue)
+            childrenPopulation.append(child2, objectiveFunction, fitnessFunction, isValue)
+
+        population.merge(childrenPopulation, isValue)
+        averageValueHistory.append(population.totalValue / population.count)
+        bestValueHistory.append(population.bestState.value)
+        print(f"Iteration {iteration}, Time Elapsed: {time.time() - start:.2f}s")
+        if population.bestState.value == functionValueDict[function]:
+            break
+        iteration += 1
+
+    runtime = time.time() - start
+    return {
+        "initial_population": initialPopulation,
+        "final_population": population,
+        "best_magic_cube": population.bestState.magicCube,
+        "best_value": population.bestState.value,
+        "best_value_history": bestValueHistory,
+        "average_value_history": averageValueHistory,
+        "population_count": population.count,
+        "iterations": iteration,
+        "runtime": runtime
+    }
+
+if __name__ == "__main__":
+    function = "var"  # or "line" depending on the objective
+    objective = functionDict[function]
+    fitness = fitnessDict[function]
+    value = functionValueDict[function]
+    isValue = value
+
+    initialPopulationCount = 4
+    maxIteration = 13
+
+    initialPopulation = Population()
+    for _ in range(initialPopulationCount):
+        initialPopulation.append(buildRandomMagicCube(), objective, fitness, isValue)
+
+    result = geneticAlgorithm(initialPopulation, maxIteration, objective, fitness, isValue)
+
+    print("\nInitial Population:")
+    result["initial_population"].display()
+    print("\nFinal Population:")
+    result["final_population"].display()
+    print("\nBest Magic Cube:")
+    print(result["best_magic_cube"])
+    print("\nBest Value:")
+    print(result["best_value"])
+    print("\nBest Value History:")
+    print(result["best_value_history"])
+    print("\nAverage Value History:")
+    print(result["average_value_history"])
+    print("\nPopulation Count:")
+    print(result["population_count"])
+    print("\nIterations:")
+    print(result["iterations"])
+    print("\nRuntime:")
+    print(f"{result['runtime']:.2f} seconds")

@@ -30,6 +30,16 @@ const ControlRow = styled.div`
   align-items: center;
 `;
 
+// Define the mapping between display names and algorithm keys
+const algorithms = [
+  { label: "Steepest Ascent Hill-Climbing", value: "steepest_ascent" },
+  { label: "Hill-Climbing with Sideways Move", value: "sideways_hill_climbing" },
+  { label: "Random Restart Hill-Climbing", value: "random_restart" },
+  { label: "Stochastic Hill-Climbing", value: "stochastic_hill_climbing" },
+  { label: "Simulated Annealing", value: "simulated_annealing" },
+  { label: "Genetic Algorithm", value: "genetic_algorithm" },
+];
+
 interface FloatingControllerProps {
   isPlaying: boolean;
   currentIndex: number;
@@ -57,12 +67,13 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
   gap,
   handleGapChange,
   initialGap,
+  setReplayData,
 }) => {
   const [selectedIteration, setSelectedIteration] = useState(currentIndex);
   const [detailVisible, setDetailVisible] = useState(false);
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState(
-    "Steepest Ascent Hill-Climbing"
-  );
+
+  // Initialize selectedAlgorithm with a valid algorithm key
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState("steepest_ascent");
 
   useEffect(() => {
     setSelectedIteration(currentIndex);
@@ -73,17 +84,20 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
     handleGapChange(normalizedGap);
   };
 
-  // Inside FloatingController component:
-  const onAlgorithmChange = async (algorithm: string) => {
-    setSelectedAlgorithm(algorithm);
+  // Corrected onAlgorithmChange function
+  const onAlgorithmChange = async (algorithmKey: string) => {
+    setSelectedAlgorithm(algorithmKey);
     try {
-      const response = await axios.post("http://127.0.0.1:8001/run-algorithm", {
-        initial_cube: Array(125).fill(1),
-        objective_function: "var",
-        value_objective: 0,
-        max_iterations: 100,
-        algorithm,
-      });
+      const response = await axios.post(
+        "http://127.0.0.1:8001/run-algorithm/",
+        {
+          initial_cube: Array(125).fill(1),
+          objective_function: "var",
+          value_objective: 0,
+          max_iterations: 100,
+          algorithm: algorithmKey, // Use the algorithm key here
+        }
+      );
       setReplayData(response.data.replay_data || []);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -105,34 +119,20 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
       dragElastic={0.05} // Reduced drag elasticity
       dragSnapToOrigin={true}
     >
-      <Text className="mb-2 text-white text-left w-full">
-        Select Algorithm:
-      </Text>
+      <Text className="mb-2 text-white text-left w-full">Select Algorithm:</Text>
       <ControlRow>
         <Select
           value={selectedAlgorithm}
           onChange={onAlgorithmChange}
           className="w-[80%]"
         >
-          <Select.Option value="Steepest Ascent Hill-Climbing">
-            Steepest Ascent Hill-Climbing
-          </Select.Option>
-          <Select.Option value="Hill-Climbing with Sideways Move">
-            Hill-Climbing with Sideways Move
-          </Select.Option>
-          <Select.Option value="Random Restart Hill-Climbing">
-            Random Restart Hill-Climbing
-          </Select.Option>
-          <Select.Option value="Stochastic Hill-Climbing">
-            Stochastic Hill-Climbing
-          </Select.Option>
-          <Select.Option value="Simulated Annealing">
-            Simulated Annealing
-          </Select.Option>
-          <Select.Option value="Genetic Algorithm">
-            Genetic Algorithm
-          </Select.Option>
+          {algorithms.map((alg) => (
+            <Select.Option key={alg.value} value={alg.value}>
+              {alg.label}
+            </Select.Option>
+          ))}
         </Select>
+
         <div className="flex gap-2">
           <Button
             type="primary"
@@ -193,9 +193,7 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
         />
       </ControlRow>
 
-      <Text className="mb-2 text-white text-left w-full">
-        Select Iteration:
-      </Text>
+      <Text className="mb-2 text-white text-left w-full">Select Iteration:</Text>
       <ControlRow>
         <Select
           value={selectedIteration}
@@ -219,12 +217,12 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
 
       <Modal
         title={`Iteration ${selectedIteration + 1} Details`}
-        visible={detailVisible}
+        open={detailVisible}
         onCancel={() => setDetailVisible(false)}
         footer={null}
       >
         <Table
-          dataSource={replayData[selectedIteration].map((value, index) => ({
+          dataSource={replayData[selectedIteration]?.map((value, index) => ({
             index: index + 1,
             value,
           }))}
