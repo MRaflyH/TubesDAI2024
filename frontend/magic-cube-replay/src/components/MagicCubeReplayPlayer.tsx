@@ -1,10 +1,30 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import { OrbitControls, Text } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import FloatingController from "./FloatingController";
 import * as THREE from "three";
-import axios from 'axios';
+import axios from "axios";
 
+// Function to create canvas texture with a given number
+const createNumberTexture = (number) => {
+  const size = 256;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const context = canvas.getContext("2d");
+  if (context) {
+    // Set background color (optional)
+    context.fillStyle = "black";
+    context.fillRect(0, 0, size, size);
+    // Set text properties
+    context.fillStyle = "white";
+    context.font = `${size / 2}px Arial`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(number.toString(), size / 2, size / 2);
+  }
+  return new THREE.CanvasTexture(canvas);
+};
 
 const MagicCubeReplayPlayer = () => {
   const [replayData, setReplayData] = useState<number[][]>([]);
@@ -14,13 +34,27 @@ const MagicCubeReplayPlayer = () => {
   const [gap, setGap] = useState(0.1);
 
   useEffect(() => {
-    const generatedData = Array.from({ length: 100 }, () => {
-      return Array.from(
-        { length: 125 },
-        () => Math.floor(Math.random() * 125) + 1
-      );
-    });
-    setReplayData(generatedData);
+    const fetchData = async () => {
+      try {
+        const generatedData = Array.from({ length: 100 }, () =>
+          Array.from({ length: 125 }, () => Math.floor(Math.random() * 125) + 1)
+        );
+        setReplayData(generatedData);
+
+        const response = await axios.post("http://127.0.0.1:8001/run-algorithm", {
+          initial_cube: Array(125).fill(1),
+          objective_function: "var",
+          value_objective: 0,
+          max_iterations: 100,
+          algorithm: "steepest_ascent",
+        });
+        setReplayData(response.data.replayData || generatedData);
+      } catch (error) {
+        console.error("Error fetching initial replay data:", error);
+      }
+    };
+
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -65,6 +99,14 @@ const MagicCubeReplayPlayer = () => {
     setGap(value);
   };
 
+  // Generate textures for all values in the current frame before rendering cubes
+  const textures = useMemo(() => {
+    if (replayData.length > 0 && replayData[currentIndex]) {
+      return replayData[currentIndex].map((value) => createNumberTexture(value));
+    }
+    return [];
+  }, [replayData, currentIndex]);
+
   return (
     <div className="relative w-full min-h-screen bg-gray-900 overflow-hidden">
       <div className="flex justify-center items-center w-full h-screen overflow-hidden">
@@ -80,8 +122,7 @@ const MagicCubeReplayPlayer = () => {
             <group>
               {replayData[currentIndex].map((value, index) => {
                 const x = (index % 5) * (1 + gap) - 2 * (1 + gap);
-                const y =
-                  Math.floor((index % 25) / 5) * (1 + gap) - 2 * (1 + gap);
+                const y = Math.floor((index % 25) / 5) * (1 + gap) - 2 * (1 + gap);
                 const z = Math.floor(index / 25) * (1 + gap) - 2 * (1 + gap);
 
                 return (
@@ -97,16 +138,10 @@ const MagicCubeReplayPlayer = () => {
                     >
                       <boxGeometry args={[0.9, 0.9, 0.9]} />
                       <meshStandardMaterial
-                        color={`hsl(${(value / 125) * 360}, 100%, 50%)`}
+                        attachArray="material"
+                        map={textures[index]} // Use pre-generated texture
                       />
                     </mesh>
-                    <Text
-                      position={[0, 0, 0.51]}
-                      fontSize={0.2}
-                      color="#ffffff"
-                    >
-                      {value}
-                    </Text>
                   </group>
                 );
               })}

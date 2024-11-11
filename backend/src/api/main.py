@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import sys
 import os
@@ -19,6 +20,15 @@ from src.packages.algorithm.stochasticHillClimb import stochastic_hill_climbing
 from src.packages.adt.magicCube import functionDict, functionValueDict
 
 app = FastAPI()
+
+# Configure CORS to allow requests from frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Use specific origins in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Model untuk request body yang menerima parameter dari frontend
 class AlgorithmRequest(BaseModel):
