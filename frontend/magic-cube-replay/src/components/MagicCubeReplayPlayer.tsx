@@ -33,6 +33,15 @@ const MagicCubeReplayPlayer = () => {
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [gap, setGap] = useState(0.1);
 
+  // Pre-render all textures for numbers 1 to 125
+  const textures = useMemo(() => {
+    const generatedTextures = [];
+    for (let i = 1; i <= 125; i++) {
+      generatedTextures.push(createNumberTexture(i));
+    }
+    return generatedTextures;
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -41,13 +50,16 @@ const MagicCubeReplayPlayer = () => {
         );
         setReplayData(generatedData);
 
-        const response = await axios.post("http://127.0.0.1:8001/run-algorithm", {
-          initial_cube: Array(125).fill(1),
-          objective_function: "var",
-          value_objective: 0,
-          max_iterations: 100,
-          algorithm: "steepest_ascent",
-        });
+        const response = await axios.post(
+          "http://127.0.0.1:8001/run-algorithm",
+          {
+            initial_cube: Array(125).fill(1),
+            objective_function: "var",
+            value_objective: 0,
+            max_iterations: 100,
+            algorithm: "steepest_ascent",
+          }
+        );
         setReplayData(response.data.replayData || generatedData);
       } catch (error) {
         console.error("Error fetching initial replay data:", error);
@@ -99,14 +111,6 @@ const MagicCubeReplayPlayer = () => {
     setGap(value);
   };
 
-  // Generate textures for all values in the current frame before rendering cubes
-  const textures = useMemo(() => {
-    if (replayData.length > 0 && replayData[currentIndex]) {
-      return replayData[currentIndex].map((value) => createNumberTexture(value));
-    }
-    return [];
-  }, [replayData, currentIndex]);
-
   return (
     <div className="relative w-full min-h-screen bg-gray-900 overflow-hidden">
       <div className="flex justify-center items-center w-full h-screen overflow-hidden">
@@ -122,27 +126,27 @@ const MagicCubeReplayPlayer = () => {
             <group>
               {replayData[currentIndex].map((value, index) => {
                 const x = (index % 5) * (1 + gap) - 2 * (1 + gap);
-                const y = Math.floor((index % 25) / 5) * (1 + gap) - 2 * (1 + gap);
+                const y =
+                  Math.floor((index % 25) / 5) * (1 + gap) - 2 * (1 + gap);
                 const z = Math.floor(index / 25) * (1 + gap) - 2 * (1 + gap);
 
                 return (
-                  <group key={index} position={[x, y, z]}>
-                    <mesh
-                      onPointerOver={(e) => {
-                        e.stopPropagation();
-                        document.body.style.cursor = "pointer";
-                      }}
-                      onPointerOut={() => {
-                        document.body.style.cursor = "default";
-                      }}
-                    >
-                      <boxGeometry args={[0.9, 0.9, 0.9]} />
-                      <meshStandardMaterial
-                        attachArray="material"
-                        map={textures[index]} // Use pre-generated texture
-                      />
-                    </mesh>
-                  </group>
+                  <mesh
+                    key={index}
+                    position={[x, y, z]}
+                    onPointerOver={(e) => {
+                      e.stopPropagation();
+                      document.body.style.cursor = "pointer";
+                    }}
+                    onPointerOut={() => {
+                      document.body.style.cursor = "default";
+                    }}
+                  >
+                    <boxGeometry args={[0.9, 0.9, 0.9]} />
+                    <meshStandardMaterial
+                      map={textures[value - 1]} // Apply unique texture for each cube
+                    />
+                  </mesh>
                 );
               })}
             </group>
