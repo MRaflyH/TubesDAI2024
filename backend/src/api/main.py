@@ -2,10 +2,10 @@ import logging
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from fastapi.responses import JSONResponse
+from typing import List, Optional
 import sys
 import os
-from fastapi.responses import JSONResponse
-from typing import List, Dict
 
 # Add the src path to sys.path to import modules
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
@@ -19,7 +19,7 @@ from src.packages.algorithm.sideWaysClimb import hill_climbing_with_sideways
 from src.packages.algorithm.stochasticHillClimb import stochastic_hill_climbing
 
 # Import objective functions and utility functions used by the algorithms
-from src.packages.adt.magicCube import functionDict, buildRandomMagicCube
+from src.packages.adt.magicCube import functionDict
 
 app = FastAPI()
 
@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 # Configure CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Atur sesuai kebutuhan produksi
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -40,9 +40,10 @@ app.add_middleware(
 class AlgorithmRequest(BaseModel):
     initial_cube: List[int]
     objective_function: str
-    value_objective: float
-    max_iterations: int
+    value_objective: Optional[float] = None
+    max_iterations: Optional[int] = None
     algorithm: str  # Name of the selected algorithm
+    is_value: Optional[bool] = False  # Add the is_value parameter to the model (default is False)
 
 @app.get("/")
 async def read_root():
@@ -54,7 +55,8 @@ def is_valid_magic_cube(cube: List[int]) -> bool:
 
 @app.post("/run-algorithm/")
 async def run_algorithm(request: AlgorithmRequest):
-    logger.info("Received request at /run-algorithm/")
+    logger.info(f"Received request at /run-algorithm/ with algorithm: {request.algorithm}")
+    
     try:
         if not is_valid_magic_cube(request.initial_cube):
             raise HTTPException(status_code=400, detail="Invalid initial cube provided")
@@ -64,70 +66,80 @@ async def run_algorithm(request: AlgorithmRequest):
         if objective_function is None:
             raise HTTPException(status_code=400, detail="Invalid objective function selected")
 
-        # Choose algorithm and generate replay data
-        replay_data = []
-        logger.info(f"Starting algorithm: {request.algorithm}")
-
-        if request.algorithm == "random_restart":
+        # Handle algorithm based on selected type
+        if request.algorithm == "sideways_hill_climbing":
+            if request.value_objective is None:
+                raise HTTPException(status_code=400, detail="Missing 'value_objective' parameter for sideways_hill_climbing")
+            result = hill_climbing_with_sideways(
+                initial_cube=request.initial_cube,
+                objective_function=objective_function,
+                value_objective=request.value_objective,  # Pass 'value_objective'
+                max_sideways_moves=20,
+                replay_data=[]
+            )
+        elif request.algorithm == "random_restart":
+            # 'random_restart_hill_climbing' does NOT expect 'value_objective', so do not pass it
             result = random_restart_hill_climbing(
                 initial_cube=request.initial_cube,
                 objective_function=objective_function,
-                value_objective=request.value_objective,
                 max_restarts=3,
-                max_iterations_per_restart=request.max_iterations,
-                replay_data=replay_data
+                max_iterations_per_restart=request.max_iterations if request.max_iterations else 100,
+                replay_data=[]
+            )
+        elif request.algorithm == "steepest_ascent":
+            if request.is_value is None:
+                raise HTTPException(status_code=400, detail="Missing 'is_value' parameter for steepest_ascent")
+            result = steepest_ascent_hill_climbing(
+                initial_cube=request.initial_cube,
+                objective_function=objective_function,
+                is_value=request.is_value,
+                replay_data=[]
             )
         elif request.algorithm == "genetic_algorithm":
+            if request.max_iterations is None:
+                raise HTTPException(status_code=400, detail="Missing 'max_iterations' parameter for genetic_algorithm")
             result = geneticAlgorithm(
                 initial_cube=request.initial_cube,
                 max_iteration=request.max_iterations,
                 objective_function=objective_function,
-                fitness_function=functionDict["line"],
-                is_value=True,
-                replay_data=replay_data
-            )
-        elif request.algorithm == "steepest_ascent":
-            result = steepest_ascent_hill_climbing(
-                initial_cube=request.initial_cube,
-                objective_function=objective_function,
-                is_value=True,
-                replay_data=replay_data
+                fitness_function=functionDict["line"],  # Pastikan 'line' ada di 'functionDict'
+                is_value=request.is_value if request.is_value else False,
+                replay_data=[]
             )
         elif request.algorithm == "simulated_annealing":
+            if request.value_objective is None:
+                raise HTTPException(status_code=400, detail="Missing 'value_objective' parameter for simulated_annealing")
+            if request.max_iterations is None:
+                raise HTTPException(status_code=400, detail="Missing 'max_iterations' parameter for simulated_annealing")
             result = simulatedAnnealingAlgorithm(
                 initial_cube=request.initial_cube,
                 T=1000000000,
                 objective_function=objective_function,
                 value_objective=request.value_objective,
-                replay_data=replay_data
-            )
-        elif request.algorithm == "sideways_hill_climbing":
-            result = hill_climbing_with_sideways(
-                initial_cube=request.initial_cube,
-                objective_function=objective_function,
-                is_value=True,
-                max_sideways_moves=20,
-                replay_data=replay_data
+                replay_data=[]
             )
         elif request.algorithm == "stochastic_hill_climbing":
+            if request.value_objective is None:
+                raise HTTPException(status_code=400, detail="Missing 'value_objective' parameter for stochastic_hill_climbing")
+            if request.max_iterations is None:
+                raise HTTPException(status_code=400, detail="Missing 'max_iterations' parameter for stochastic_hill_climbing")
             result = stochastic_hill_climbing(
                 initial_cube=request.initial_cube,
                 max_iterations=request.max_iterations,
                 objective_function=objective_function,
                 value_objective=request.value_objective,
-                replay_data=replay_data
+                replay_data=[]
             )
         else:
             raise HTTPException(status_code=400, detail="Invalid algorithm selected")
 
-        # Prepare response with all the data
         response_data = {
             "initial_cube": request.initial_cube,
             "final_cube": result["final_cube"],
             "final_value": result["final_value"],
             "runtime": result.get("runtime"),
             "iterations": result.get("iterations"),
-            "replay_data": replay_data  # Replay data for all iterations
+            "replay_data": result.get("replay_data", [])
         }
 
         return JSONResponse(content=response_data)

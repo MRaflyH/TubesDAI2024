@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import styled from "styled-components";
 import { Button, Select, Slider, Modal, Table, Typography } from "antd";
-import { PlayIcon, PauseIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
-import axios from "axios";
+import { PauseIcon, PlayIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 
 const { Text } = Typography;
 
@@ -33,7 +32,10 @@ const ControlRow = styled.div`
 // Define the mapping between display names and algorithm keys
 const algorithms = [
   { label: "Steepest Ascent Hill-Climbing", value: "steepest_ascent" },
-  { label: "Hill-Climbing with Sideways Move", value: "sideways_hill_climbing" },
+  {
+    label: "Hill-Climbing with Sideways Move",
+    value: "sideways_hill_climbing",
+  },
   { label: "Random Restart Hill-Climbing", value: "random_restart" },
   { label: "Stochastic Hill-Climbing", value: "stochastic_hill_climbing" },
   { label: "Simulated Annealing", value: "simulated_annealing" },
@@ -53,6 +55,9 @@ interface FloatingControllerProps {
   handleGapChange: (value: number) => void;
   initialGap: number;
   setReplayData: (data: number[][]) => void;
+  initialCube: number[];
+  selectedAlgorithm: string; // Tambahkan ini
+  setSelectedAlgorithm: (alg: string) => void; // Tambahkan ini
 }
 
 const FloatingController: React.FC<FloatingControllerProps> = ({
@@ -68,12 +73,11 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
   handleGapChange,
   initialGap,
   setReplayData,
+  selectedAlgorithm, // Tambahkan ini
+  setSelectedAlgorithm, // Tambahkan ini
 }) => {
   const [selectedIteration, setSelectedIteration] = useState(currentIndex);
   const [detailVisible, setDetailVisible] = useState(false);
-
-  // Initialize selectedAlgorithm with a valid algorithm key
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState("steepest_ascent");
 
   useEffect(() => {
     setSelectedIteration(currentIndex);
@@ -84,24 +88,8 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
     handleGapChange(normalizedGap);
   };
 
-  // Corrected onAlgorithmChange function
-  const onAlgorithmChange = async (algorithmKey: string) => {
-    setSelectedAlgorithm(algorithmKey);
-    try {
-      const response = await axios.post(
-        "http://127.0.0.1:8001/run-algorithm/",
-        {
-          initial_cube: Array(125).fill(1),
-          objective_function: "var",
-          value_objective: 0,
-          max_iterations: 100,
-          algorithm: algorithmKey, // Use the algorithm key here
-        }
-      );
-      setReplayData(response.data.replay_data || []);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
+  const onAlgorithmChange = (algorithmKey: string) => {
+    setSelectedAlgorithm(algorithmKey); // Update selected algorithm di parent
   };
 
   return (
@@ -119,7 +107,9 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
       dragElastic={0.05} // Reduced drag elasticity
       dragSnapToOrigin={true}
     >
-      <Text className="mb-2 text-white text-left w-full">Select Algorithm:</Text>
+      <Text className="mb-2 text-white text-left w-full">
+        Select Algorithm:
+      </Text>
       <ControlRow>
         <Select
           value={selectedAlgorithm}
@@ -193,7 +183,9 @@ const FloatingController: React.FC<FloatingControllerProps> = ({
         />
       </ControlRow>
 
-      <Text className="mb-2 text-white text-left w-full">Select Iteration:</Text>
+      <Text className="mb-2 text-white text-left w-full">
+        Select Iteration:
+      </Text>
       <ControlRow>
         <Select
           value={selectedIteration}

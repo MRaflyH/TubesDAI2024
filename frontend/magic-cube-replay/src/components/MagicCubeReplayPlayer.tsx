@@ -6,17 +6,15 @@ import * as THREE from "three";
 import axios from "axios";
 
 // Function to create canvas texture with a given number
-const createNumberTexture = (number: number) => {
+const createNumberTexture = (number) => {
   const size = 256;
   const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;
   const context = canvas.getContext("2d");
   if (context) {
-    // Set background color (optional)
     context.fillStyle = "black";
     context.fillRect(0, 0, size, size);
-    // Set text properties
     context.fillStyle = "white";
     context.font = `${size / 2}px Arial`;
     context.textAlign = "center";
@@ -27,86 +25,109 @@ const createNumberTexture = (number: number) => {
 };
 
 const MagicCubeReplayPlayer = () => {
-  const [replayData, setReplayData] = useState<number[][]>([]);
+  const [initialCube, setInitialCube] = useState(
+    Array.from({ length: 125 }, () => Math.floor(Math.random() * 125) + 1)
+  );
+  const [replayData, setReplayData] = useState([initialCube]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [gap, setGap] = useState(0.1);
+  const [isRequestSent, setIsRequestSent] = useState(false); // Flag untuk melacak apakah request sudah dikirim
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState("steepest_ascent"); // Tambahkan state ini
 
   // Pre-render all textures for numbers 1 to 125
-  const textures = useMemo(() => {
-    const generatedTextures = [];
-    for (let i = 1; i <= 125; i++) {
-      generatedTextures.push(createNumberTexture(i));
-    }
-    return generatedTextures;
-  }, []);
+  const textures = useMemo(
+    () => Array.from({ length: 125 }, (_, i) => createNumberTexture(i + 1)),
+    []
+  );
+
+  // Reset isRequestSent ketika algoritma diubah
+  useEffect(() => {
+    setIsRequestSent(false);
+    setReplayData([initialCube]);
+    setCurrentIndex(0);
+  }, [selectedAlgorithm, initialCube]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const generatedData = Array.from({ length: 100 }, () =>
-          Array.from({ length: 125 }, () => Math.floor(Math.random() * 125) + 1)
-        );
-        setReplayData(generatedData);
-
-        const response = await axios.post("http://127.0.0.1:8001/run-algorithm/", {
-          initial_cube: Array(125).fill(1),
-          objective_function: "var",
-          value_objective: 0,
-          max_iterations: 100,
-          algorithm: "steepest_ascent",
+    let interval;
+    if (isPlaying && replayData.length > 0) {
+      interval = setInterval(() => {
+        setCurrentIndex((prevIndex) => {
+          if (prevIndex < replayData.length - 1) return prevIndex + 1;
+          clearInterval(interval);
+          setIsPlaying(false); // Menghentikan pemutaran setelah selesai
+          return prevIndex;
         });
-        setReplayData(response.data.replayData || generatedData);
+      }, 1000 / playbackSpeed); // Mengatur kecepatan berdasarkan playbackSpeed
+    }
+    return () => clearInterval(interval);
+  }, [isPlaying, playbackSpeed, replayData]);
+
+  // Function to handle play/pause
+  const handlePlayPause = async () => {
+    if (!isPlaying && !isRequestSent) {
+      // Siapkan parameter permintaan berdasarkan algoritma yang dipilih
+      const requestParams = {
+        initial_cube: initialCube,
+        objective_function: "var", // Sesuaikan jika perlu
+        algorithm: selectedAlgorithm,
+      };
+
+      // Tambahkan parameter yang hanya diperlukan untuk algoritma tertentu
+      switch (selectedAlgorithm) {
+        case "random_restart":
+          requestParams.max_iterations = 100; // Pastikan 'max_iterations' disertakan
+          break;
+        case "steepest_ascent":
+          requestParams.is_value = true; // Kirimkan 'is_value' untuk steepest_ascent
+          break;
+        case "stochastic_hill_climbing":
+          requestParams.value_objective = 0;
+          requestParams.max_iterations = 100;
+          break;
+        case "simulated_annealing":
+          requestParams.value_objective = 0;
+          requestParams.max_iterations = 100;
+          break;
+        case "genetic_algorithm":
+          requestParams.max_iterations = 100; // Sesuaikan jika diperlukan
+          requestParams.is_value = false; // Atau sesuai kebutuhan
+          break;
+        case "sideways_hill_climbing":
+          requestParams.value_objective = 0; // Kirimkan 'value_objective' untuk sideways_hill_climbing
+          break;
+        // Tambahkan case lain sesuai kebutuhan
+        default:
+          break;
+      }
+
+      try {
+        const response = await axios.post(
+          "http://127.0.0.1:8001/run-algorithm/",
+          requestParams
+        );
+        console.log("Data fetched:", response.data.replay_data);
+
+        if (response.data.replay_data) {
+          setReplayData(response.data.replay_data);
+          setIsRequestSent(true); // Tandai bahwa request sudah dikirim
+        } else {
+          console.warn("Replay data not found in response:", response.data);
+        }
       } catch (error) {
         console.error("Error fetching initial replay data:", error);
       }
-    };
-
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    if (isPlaying) {
-      const interval = setInterval(() => {
-        setCurrentIndex((prevIndex) => {
-          if (prevIndex < replayData.length - 1) {
-            return prevIndex + 1;
-          } else {
-            clearInterval(interval);
-            setIsPlaying(false);
-            return prevIndex;
-          }
-        });
-      }, 1000 / playbackSpeed);
-
-      return () => clearInterval(interval);
     }
-  }, [isPlaying, playbackSpeed, replayData]);
 
-  const handlePlayPause = () => {
+    // Toggle status play/pause tanpa mengirim request backend saat Pause
     setIsPlaying(!isPlaying);
   };
 
-  const handleSpeedChange = (value: number) => {
-    setPlaybackSpeed(value);
-  };
-
-  const handleProgressChange = (value: number) => {
-    setCurrentIndex(value);
-    if (value === replayData.length - 1) {
-      setIsPlaying(false);
-    }
-  };
-
-  const handleReset = () => {
-    setCurrentIndex(0);
-    setIsPlaying(false);
-  };
-
-  const handleGapChange = (value: number) => {
-    setGap(value);
-  };
+  const handleSpeedChange = (value) => setPlaybackSpeed(value);
+  const handleProgressChange = (value) => setCurrentIndex(value);
+  const handleReset = () => setCurrentIndex(0);
+  const handleGapChange = (value) => setGap(value);
 
   return (
     <div className="relative w-full min-h-screen bg-slate-600 overflow-hidden">
@@ -123,25 +144,14 @@ const MagicCubeReplayPlayer = () => {
             <group>
               {replayData[currentIndex].map((value, index) => {
                 const x = (index % 5) * (1 + gap) - 2 * (1 + gap);
-                const y = Math.floor((index % 25) / 5) * (1 + gap) - 2 * (1 + gap);
+                const y =
+                  Math.floor((index % 25) / 5) * (1 + gap) - 2 * (1 + gap);
                 const z = Math.floor(index / 25) * (1 + gap) - 2 * (1 + gap);
 
                 return (
-                  <mesh
-                    key={index}
-                    position={[x, y, z]}
-                    onPointerOver={(e) => {
-                      e.stopPropagation();
-                      document.body.style.cursor = "pointer";
-                    }}
-                    onPointerOut={() => {
-                      document.body.style.cursor = "default";
-                    }}
-                  >
+                  <mesh key={index} position={[x, y, z]}>
                     <boxGeometry args={[0.9, 0.9, 0.9]} />
-                    <meshStandardMaterial
-                      map={textures[value - 1]} // Apply unique texture for each cube
-                    />
+                    <meshStandardMaterial map={textures[value - 1]} />
                   </mesh>
                 );
               })}
@@ -165,6 +175,8 @@ const MagicCubeReplayPlayer = () => {
             gap={gap}
             handleGapChange={handleGapChange}
             initialGap={0.1}
+            selectedAlgorithm={selectedAlgorithm} // Pass the selectedAlgorithm
+            setSelectedAlgorithm={setSelectedAlgorithm} // Pass the setter
           />
         </div>
       )}
@@ -173,40 +185,25 @@ const MagicCubeReplayPlayer = () => {
 };
 
 // Custom Zoom and Pan Control Component
-function ZoomOrbitControls({ gap }: { gap: number }) {
-  const { camera, gl, mouse } = useThree();
+function ZoomOrbitControls({ gap }) {
+  const { camera, gl } = useThree();
 
   useEffect(() => {
-    const handleWheel = (event: WheelEvent) => {
+    const handleWheel = (event) => {
       if (gap === 10) {
         const zoomFactor = event.deltaY * 0.002;
-        const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(
-          camera
-        );
+        const vector = new THREE.Vector3().set(0, 0, 0.5).unproject(camera);
         const direction = vector.sub(camera.position).normalize();
         camera.position.addScaledVector(direction, zoomFactor);
         camera.updateProjectionMatrix();
       }
     };
-
     gl.domElement.addEventListener("wheel", handleWheel);
-
-    return () => {
-      gl.domElement.removeEventListener("wheel", handleWheel);
-    };
-  }, [camera, gl, mouse, gap]);
+    return () => gl.domElement.removeEventListener("wheel", handleWheel);
+  }, [camera, gl, gap]);
 
   return (
-    <OrbitControls
-      target={[0, 0, 0]}
-      enableZoom={true}
-      enablePan={true}
-      maxDistance={50}
-      mouseButtons={{
-        LEFT: THREE.MOUSE.ROTATE,
-        MIDDLE: THREE.MOUSE.PAN,
-      }}
-    />
+    <OrbitControls target={[0, 0, 0]} enableZoom enablePan maxDistance={50} />
   );
 }
 

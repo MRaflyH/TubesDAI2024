@@ -10,7 +10,7 @@ def decision(probability):
     """
     return (random.random() < probability)
 
-def simulatedAnnealingAlgorithm(initial_cube, T, objective_function, value_objective):
+def simulatedAnnealingAlgorithm(initial_cube, T, objective_function, value_objective, replay_data):
     """
     Run the Simulated Annealing algorithm to find the best solution.
     Returns the result in a structured format suitable for frontend.
@@ -27,6 +27,9 @@ def simulatedAnnealingAlgorithm(initial_cube, T, objective_function, value_objec
         current_value = objective_function(magic_cube)
         value_array.append(current_value)
         sa_formula = 0
+
+        # Tambahkan status awal ke replay_data
+        replay_data.append(copy.deepcopy(magic_cube))
 
         while T > 0 and current_value != value_objective:
             index1, index2 = random.sample(range(125), 2)
@@ -47,24 +50,25 @@ def simulatedAnnealingAlgorithm(initial_cube, T, objective_function, value_objec
 
             value_array.append(current_value)
             iteration += 1
-            T *= 0.999  # Reduce temperature in each iteration
+            T *= 0.999  # Kurangi suhu setiap iterasi
 
             if T <= 1e-38:
-                T = 0  # End the process if temperature is too low
+                T = 0  # Akhiri proses jika suhu terlalu rendah
+
+            # Tambahkan status saat ini ke replay_data
+            replay_data.append(copy.deepcopy(magic_cube))
 
         runtime = time.time() - start
 
         return {
-            "initial_cube": initial_cube,
             "final_cube": magic_cube,
             "final_value": current_value,
-            "value_array": value_array,
             "runtime": runtime,
             "iterations": iteration,
-            "sa_formula_array": sa_formula_array
+            "replay_data": replay_data
         }
 
     except Exception as e:
         print(f"Error in simulatedAnnealingAlgorithm: {e}")
-        # Additional logging can be added here if needed
-        raise e  # Reraise the exception to propagate it to the API layer or calling function
+        # Tambahkan logging tambahan jika diperlukan
+        raise e  # Reraise the exception untuk propagasi ke API layer atau fungsi pemanggil
