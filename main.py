@@ -20,9 +20,10 @@ value = functionValueDict[function]
 algoritma = ""
 
 while algoritma != "ga" and algoritma != "restart" and algoritma != "sideways" and algoritma != "sa" and algoritma != "steepest" and algoritma != "stochastic":
-    print("ga/restart/sideways/sa/steepest/stochastic")
+    print("\nga/restart/sideways/sa/steepest/stochastic")
     algoritma = input()
-    print()
+
+print()
 
 if algoritma == "ga":
     print("Initial population count (recommended 8):")
@@ -61,13 +62,63 @@ if algoritma == "ga":
     plt.show()
 
 elif algoritma == "restart":
+    print("Max restarts (recommended 3):")
+    max_restarts = int(input())
     print()
+
+    initial_cubes, best_magic_cube, best_value, best_objective_values, runtime, total_iterations, restarts, iterations_per_restart = random_restart_hill_climbing(
+        objective, value, max_restarts
+    )
+
+    print(f"Final Objective Value (Variance): {best_value}")
+    print(f"Runtime: {runtime} sec")
+    print(f"Total Iterations Across All Restarts: {total_iterations}")
+    print(f"Total Restarts: {restarts}")
+    print(f"Restarts per Iteration: {iterations_per_restart}")
+    plotting(best_objective_values)
+
+    visualizeCube(initial_cubes[0])
+    visualizeCube(best_magic_cube)
+
 elif algoritma == "sideways":
-    print()
+    initial_cube = buildRandomMagicCube()
+    initial_cube, final_cube, final_value, objective_values, runtime, iterations = hill_climbing_with_sideways(initial_cube, objective, value)
+    print("Final Objective Value:", final_value)
+    print("Runtime:", runtime, "sec")
+    print("Number of Iterations:", iterations)
+    plotting(objective_values)
+    visualizeCube(initial_cube)
+    visualizeCube(final_cube)
+
 elif algoritma == "sa":
-    print()
-elif algoritma == "steepest":
-    print()
-elif algoritma == "stochastic":
-    print()
+    test = buildRandomMagicCube()
+    initial_cube, final_cube, currentValue, objective_values, runtime, iterations, SA_formula_array = simulatedAnnealingAlgorithm(test, 1000000000, objective, value)
+    printMagicCube(final_cube)
+    print(objectiveFunction(final_cube))
+    plotting(SA_formula_array)
+    print(runtime)
     
+elif algoritma == "steepest":
+    initial_cube = buildRandomMagicCube()
+    initial_cube, final_cube, final_value, objective_value_iterations, runtime, iterations = steepest_ascent_hill_climbing(initial_cube, objective, value)
+    print("Final Objective Value:", final_value)
+    print("Runtime:", runtime, "sec")
+    print("Number of Iterations:", iterations)
+    plotting(objective_value_iterations)
+    visualizeCube(initial_cube)
+    visualizeCube(final_cube)
+
+elif algoritma == "stochastic":
+    print("Max iterations (recommended 100000):")
+    max_iterations = int(input())
+    print()
+
+    initial_cube = buildRandomMagicCube()
+    initial_cube, final_cube, final_value, objective_values, runtime, iterations = stochastic_hill_climbing(initial_cube, max_iterations, objective_function, value_objective)
+
+    print(f"Final Objective Value: {final_value}")
+    print("Runtime:", runtime, "sec")
+    print("Number of Iterations:", iterations)
+    plotting(objective_values)
+    visualizeCube(initial_cube)
+    visualizeCube(final_cube)
